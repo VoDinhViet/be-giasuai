@@ -2,7 +2,7 @@ import {
   EnumFieldOptional,
   StringFieldOptional,
   URLFieldOptional,
-} from '..\..\../decorators/field.decorators';
+} from '../../../decorators/field.decorators';
 
 import { ResourceType } from './resource-type.enum';
 

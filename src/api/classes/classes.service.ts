@@ -15,23 +15,23 @@ import {
   SQL,
 } from 'drizzle-orm';
 
-import { JwtPayloadType } from '..\../api/auth/types/jwt-payload.type';
-import { PageOptionsDto } from '..\../common/offset-pagination/page-options.dto';
-import { OffsetPaginatedDto } from '..\../common/offset-pagination/paginated.dto';
-import { OffsetPaginationDto } from '..\../common/offset-pagination/offset-pagination.dto';
-import { OrderBy } from '..\../constants/app.constant';
-import { ErrorCode } from '..\../constants/error-code.constant';
-import { Role } from '..\../constants/role.constant';
-import { DRIZZLE } from '..\../database/database.module';
-import type { Database } from '..\../database/database.type';
+import { JwtPayloadType } from '../../api/auth/types/jwt-payload.type';
+import { PageOptionsDto } from '../../common/offset-pagination/page-options.dto';
+import { OffsetPaginatedDto } from '../../common/offset-pagination/paginated.dto';
+import { OffsetPaginationDto } from '../../common/offset-pagination/offset-pagination.dto';
+import { OrderBy } from '../../constants/app.constant';
+import { ErrorCode } from '../../constants/error-code.constant';
+import { Role } from '../../constants/role.constant';
+import { DRIZZLE } from '../../database/database.module';
+import type { Database } from '../../database/database.type';
 import {
   classCourses,
   classEnrollments,
   classes,
   courses,
   users,
-} from '..\../database/schemas';
-import { AppException } from '..\../exceptions/app.exception';
+} from '../../database/schemas';
+import { AppException } from '../../exceptions/app.exception';
 
 import { ClassDetailResDto } from './dto/class-detail.res.dto';
 import { ClassResDto } from './dto/class.res.dto';

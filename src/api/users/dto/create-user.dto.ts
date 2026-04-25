@@ -3,8 +3,8 @@ import {
   EnumField,
   PasswordField,
   StringField,
-} from '..\..\../decorators/field.decorators';
-import { Role } from '..\..\../constants/role.constant';
+} from '../../../decorators/field.decorators';
+import { Role } from '../../../constants/role.constant';
 
 export class CreateUserDto {
   @EmailField({ description: 'Địa chỉ email của người dùng' })

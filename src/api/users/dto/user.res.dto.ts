@@ -4,7 +4,7 @@ import {
   StringField,
   StringFieldOptional,
   UUIDField,
-} from '..\..\../decorators/field.decorators';
+} from '../../../decorators/field.decorators';
 
 export class UserResDto {
   @UUIDField({ description: 'ID người dùng' })

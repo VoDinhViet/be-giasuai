@@ -1,7 +1,7 @@
 import {
   StringField,
   StringFieldOptional,
-} from '..\..\../decorators/field.decorators';
+} from '../../../decorators/field.decorators';
 
 export class CreateClassReqDto {
   @StringField({ description: 'Ten lop hoc' })

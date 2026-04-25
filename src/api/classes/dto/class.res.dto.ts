@@ -7,8 +7,8 @@ import {
   StringFieldOptional,
   UUIDField,
   UUIDFieldOptional,
-} from '..\..\../decorators/field.decorators';
-import { UserResDto } from '..\..\../api/users/dto/user.res.dto';
+} from '../../../decorators/field.decorators';
+import { UserResDto } from '../../../api/users/dto/user.res.dto';
 
 export class ClassResDto {
   @UUIDField({ description: 'ID lớp học' })

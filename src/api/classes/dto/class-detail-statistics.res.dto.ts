@@ -4,7 +4,7 @@ import {
   BooleanField,
   NumberField,
   StringField,
-} from '..\..\../decorators/field.decorators';
+} from '../../../decorators/field.decorators';
 
 export class ClassDetailStatisticsResDto {
   @NumberField({

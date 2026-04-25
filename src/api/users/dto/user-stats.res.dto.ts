@@ -1,5 +1,5 @@
 import { Expose } from 'class-transformer';
-import { NumberField } from '..\..\../decorators/field.decorators';
+import { NumberField } from '../../../decorators/field.decorators';
 
 export class UserStatsResDto {
   @NumberField({ description: 'Tổng số người dùng' })

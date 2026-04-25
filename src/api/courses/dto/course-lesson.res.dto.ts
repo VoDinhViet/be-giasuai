@@ -8,7 +8,7 @@ import {
   StringFieldOptional,
   URLFieldOptional,
   UUIDField,
-} from '..\..\../decorators/field.decorators';
+} from '../../../decorators/field.decorators';
 
 import { CourseResourceResDto } from './course-resource.res.dto';
 import { LessonType } from './lesson-type.enum';

@@ -5,8 +5,8 @@ import { AuthService } from './auth.service';
 import { LoginReqDto } from './dto/login.req.dto';
 import { LoginResDto } from './dto/login.res.dto';
 import { RegisterReqDto } from './dto/register.req.dto';
-import { ApiAuth, ApiPublic } from '..\../decorators/http.decorators';
-import { User } from '..\../decorators/user.decorator';
+import { ApiAuth, ApiPublic } from '../../decorators/http.decorators';
+import { User } from '../../decorators/user.decorator';
 import { JwtPayloadType } from './types/jwt-payload.type';
 
 @ApiTags('auth')

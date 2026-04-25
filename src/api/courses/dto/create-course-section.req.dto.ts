@@ -2,7 +2,7 @@ import {
   NumberField,
   StringField,
   StringFieldOptional,
-} from '..\..\../decorators/field.decorators';
+} from '../../../decorators/field.decorators';
 
 export class CreateCourseSectionReqDto {
   @StringField({ description: 'Ten chuong hoc' })

@@ -1,7 +1,7 @@
 import { Expose, Type } from 'class-transformer';
 
-import { UserResDto } from '..\..\../api/users/dto/user.res.dto';
-import { ClassField, NumberField } from '..\..\../decorators/field.decorators';
+import { UserResDto } from '../../../api/users/dto/user.res.dto';
+import { ClassField, NumberField } from '../../../decorators/field.decorators';
 
 import { ClassResDto } from './class.res.dto';
 

@@ -6,7 +6,7 @@ import {
   StringField,
   StringFieldOptional,
   URLFieldOptional,
-} from '..\..\../decorators/field.decorators';
+} from '../../../decorators/field.decorators';
 
 import { LessonType } from './lesson-type.enum';
 

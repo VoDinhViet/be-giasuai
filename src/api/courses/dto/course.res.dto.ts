@@ -9,7 +9,7 @@ import {
   URLFieldOptional,
   UUIDField,
   UUIDFieldOptional,
-} from '..\..\../decorators/field.decorators';
+} from '../../../decorators/field.decorators';
 import { CourseLevel } from './course-level.enum';
 
 export class CourseResDto {
