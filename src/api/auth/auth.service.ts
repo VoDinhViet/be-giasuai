@@ -12,7 +12,7 @@ import type { Cache } from 'cache-manager';
 import { randomBytes } from 'crypto';
 import { eq, or } from 'drizzle-orm';
 import ms from 'ms';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 
 import { ErrorCode } from '../../constants/error-code.constant';
 import { Uuid } from '../../common/types/common.type';

@@ -25,7 +25,7 @@ import { setupSwagger } from './utils/swagger.util';
 import { AllConfigType } from './config/config.type';
 import { Environment } from './constants/app.constant';
 
-async function bootstrap() {
+export async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   app.set('trust proxy', 1); // Trust first proxy (Nginx, Cloudflare...)
@@ -74,29 +74,26 @@ async function bootstrap() {
     setupSwagger(app);
   }
 
-  const port = configService.getOrThrow('app.port', { infer: true });
-  await app.listen(port);
-
-  const nodeEnv = configService.getOrThrow('app.nodeEnv', { infer: true });
-  Logger.log(
-    `==========================================================`,
-    'Bootstrap',
-  );
-  Logger.log(
-    `🚀 Application is running on: http://localhost:${port}/api`,
-    'Bootstrap',
-  );
-  Logger.log(`🌍 Current Environment: ${nodeEnv}`, 'Bootstrap');
-  if (nodeEnv !== Environment.PRODUCTION) {
-    Logger.log(
-      `📚 Swagger Documentation: http://localhost:${port}/api-docs`,
-      'Bootstrap',
-    );
-  }
-  Logger.log(
-    `==========================================================`,
-    'Bootstrap',
-  );
+  await app.init();
+  return app.getHttpAdapter().getInstance();
 }
 
-bootstrap();
+if (process.env.NODE_ENV !== 'production') {
+  bootstrap().then(async (server) => {
+    const port = process.env.APP_PORT || 3000;
+    await server.listen(port);
+    Logger.log(
+      `==========================================================`,
+      'Bootstrap',
+    );
+    Logger.log(
+      `🚀 Application is running on: http://localhost:${port}/api`,
+      'Bootstrap',
+    );
+    Logger.log(
+      `==========================================================`,
+      'Bootstrap',
+    );
+  });
+}
+
