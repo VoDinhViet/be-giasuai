@@ -1,7 +1,7 @@
 import { registerAs } from '@nestjs/config';
 import { AuthConfig } from './auth-config.type';
 import { IsOptional, IsString } from 'class-validator';
-import validateConfig from '@/utils/validate-config';
+import validateConfig from '../../../utils/validate-config';
 import { StringValue } from 'ms';
 
 class ReflectionVariablesValidator {
