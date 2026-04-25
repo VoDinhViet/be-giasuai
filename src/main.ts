@@ -64,7 +64,10 @@ export async function bootstrap() {
   );
   app.useGlobalInterceptors(new ClassSerializerInterceptor(reflector));
 
-  if (configService.getOrThrow('app.nodeEnv', { infer: true }) !== Environment.PRODUCTION) {
+  if (
+    configService.getOrThrow('app.nodeEnv', { infer: true }) !==
+    Environment.PRODUCTION
+  ) {
     setupSwagger(app);
   }
 
@@ -72,20 +75,11 @@ export async function bootstrap() {
   return app.getHttpAdapter().getInstance();
 }
 
-// For local development
-if (process.env.NODE_ENV !== 'production') {
-  bootstrap().then(async (instance) => {
-    const port = process.env.APP_PORT || 3000;
-    await instance.listen(port);
-    Logger.log(`🚀 Application is running on: http://localhost:${port}/api`, 'Bootstrap');
-  });
-}
-
-// For Vercel Serverless Function
-const serverPromise = bootstrap();
-export default async (req: any, res: any) => {
-  const server = await serverPromise;
-  return server(req, res);
-};
-
-
+bootstrap().then(async (instance) => {
+  const port = process.env.APP_PORT || 3000;
+  instance.listen(port);
+  Logger.log(
+    `🚀 Application is running on: http://localhost:${port}/api`,
+    'Bootstrap',
+  );
+});
