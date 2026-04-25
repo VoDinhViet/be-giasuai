@@ -16,16 +16,19 @@ import { NestFactory, Reflector } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { ValidationError } from 'class-validator';
 import compression from 'compression';
+import type { Express, Request, Response } from 'express';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
-import { GlobalExceptionFilter } from './filters/global-exception.filter';
 import { AuthGuard } from './guards/auth.guard';
 import { RolesGuard } from './guards/roles.guard';
-import { setupSwagger } from './utils/swagger.util';
-import { AllConfigType } from './config/config.type';
+import { GlobalExceptionFilter } from './filters/global-exception.filter';
 import { Environment } from './constants/app.constant';
+import { AllConfigType } from './config/config.type';
+import { setupSwagger } from './utils/swagger.util';
 
-export async function bootstrap() {
+let cachedServer: Express | null = null;
+
+export async function bootstrap(): Promise<Express> {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   app.set('trust proxy', 1);
@@ -75,11 +78,26 @@ export async function bootstrap() {
   return app.getHttpAdapter().getInstance();
 }
 
-bootstrap().then(async (instance) => {
-  const port = process.env.APP_PORT || 3000;
-  instance.listen(port);
-  Logger.log(
-    `🚀 Application is running on: http://localhost:${port}/api`,
-    'Bootstrap',
-  );
-});
+async function getServer(): Promise<Express> {
+  if (!cachedServer) {
+    cachedServer = await bootstrap();
+  }
+
+  return cachedServer;
+}
+
+export default async function handler(req: Request, res: Response) {
+  const server = await getServer();
+  return server(req, res);
+}
+
+if (require.main === module) {
+  getServer().then((instance) => {
+    const port = process.env.APP_PORT || 3000;
+    instance.listen(port);
+    Logger.log(
+      `Application is running on: http://localhost:${port}/api`,
+      'Bootstrap',
+    );
+  });
+}
