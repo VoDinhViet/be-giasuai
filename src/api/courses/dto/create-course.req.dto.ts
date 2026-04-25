@@ -5,7 +5,7 @@ import {
   StringFieldOptional,
   URLFieldOptional,
   UUIDFieldOptional,
-} from '@/decorators/field.decorators';
+} from '..\..\../decorators/field.decorators';
 import { CourseLevel } from './course-level.enum';
 
 export class CreateCourseReqDto {

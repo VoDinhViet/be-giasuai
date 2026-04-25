@@ -1,5 +1,5 @@
 import { applyDecorators } from '@nestjs/common';
-import { Constructor } from '@/common/types/types';
+import { Constructor } from '../common/types/types';
 import { ApiProperty, type ApiPropertyOptions } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {

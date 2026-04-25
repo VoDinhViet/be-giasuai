@@ -1,5 +1,5 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
-import { ErrorCode } from '@/constants/error-code.constant';
+import { ErrorCode } from '../constants/error-code.constant';
 
 /**
  * AppException used to throw business errors with a custom error code,

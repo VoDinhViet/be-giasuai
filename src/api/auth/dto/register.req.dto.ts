@@ -3,8 +3,8 @@ import {
   EnumField,
   PasswordField,
   StringField,
-} from '@/decorators/field.decorators';
-import { Role } from '@/constants/role.constant';
+} from '..\..\../decorators/field.decorators';
+import { Role } from '..\..\../constants/role.constant';
 
 export class RegisterReqDto {
   @EmailField({ description: 'Địa chỉ email của người dùng' })

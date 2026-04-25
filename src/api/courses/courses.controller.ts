@@ -10,12 +10,12 @@ import {
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
-import { JwtPayloadType } from '@/api/auth/types/jwt-payload.type';
-import { OffsetPaginatedDto } from '@/common/offset-pagination/paginated.dto';
-import { Role } from '@/constants/role.constant';
-import { ApiAuth, ApiPublic } from '@/decorators/http.decorators';
-import { Roles } from '@/decorators/roles.decorator';
-import { User } from '@/decorators/user.decorator';
+import { JwtPayloadType } from '..\../api/auth/types/jwt-payload.type';
+import { OffsetPaginatedDto } from '..\../common/offset-pagination/paginated.dto';
+import { Role } from '..\../constants/role.constant';
+import { ApiAuth, ApiPublic } from '..\../decorators/http.decorators';
+import { Roles } from '..\../decorators/roles.decorator';
+import { User } from '..\../decorators/user.decorator';
 
 import { CoursesService } from './courses.service';
 import { CourseContentResDto } from './dto/course-content.res.dto';

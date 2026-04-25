@@ -13,8 +13,8 @@ import { STATUS_CODES } from 'http';
 import { ErrorDetailDto } from '../common/dto/error-detail.dto';
 import { ErrorDto } from '../common/dto/error.dto';
 import { AllConfigType } from '../config/config.type';
-import { AppException } from '@/exceptions/app.exception';
-import { Environment } from '@/constants/app.constant';
+import { AppException } from '../exceptions/app.exception';
+import { Environment } from '../constants/app.constant';
 
 export interface PostgresError extends Error {
   code: string;

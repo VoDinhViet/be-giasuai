@@ -4,21 +4,21 @@ import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { and, asc, count, desc, eq, ilike, or, SQL } from 'drizzle-orm';
 
-import { JwtPayloadType } from '@/api/auth/types/jwt-payload.type';
-import { OffsetPaginatedDto } from '@/common/offset-pagination/paginated.dto';
-import { OffsetPaginationDto } from '@/common/offset-pagination/offset-pagination.dto';
-import { OrderBy } from '@/constants/app.constant';
-import { ErrorCode } from '@/constants/error-code.constant';
-import { Role } from '@/constants/role.constant';
-import { DRIZZLE } from '@/database/database.module';
-import type { Database } from '@/database/database.type';
+import { JwtPayloadType } from '..\../api/auth/types/jwt-payload.type';
+import { OffsetPaginatedDto } from '..\../common/offset-pagination/paginated.dto';
+import { OffsetPaginationDto } from '..\../common/offset-pagination/offset-pagination.dto';
+import { OrderBy } from '..\../constants/app.constant';
+import { ErrorCode } from '..\../constants/error-code.constant';
+import { Role } from '..\../constants/role.constant';
+import { DRIZZLE } from '..\../database/database.module';
+import type { Database } from '..\../database/database.type';
 import {
   courseLessons,
   courseResources,
   courseSections,
   courses,
-} from '@/database/schemas';
-import { AppException } from '@/exceptions/app.exception';
+} from '..\../database/schemas';
+import { AppException } from '..\../exceptions/app.exception';
 
 import { CourseContentResDto } from './dto/course-content.res.dto';
 import { CourseDetailLessonResDto } from './dto/course-detail-lesson.res.dto';

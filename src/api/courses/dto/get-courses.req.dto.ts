@@ -1,9 +1,9 @@
-import { PageOptionsDto } from '@/common/offset-pagination/page-options.dto';
-import { OrderBy } from '@/constants/app.constant';
+import { PageOptionsDto } from '..\..\../common/offset-pagination/page-options.dto';
+import { OrderBy } from '..\..\../constants/app.constant';
 import {
   BooleanFieldOptional,
   EnumFieldOptional,
-} from '@/decorators/field.decorators';
+} from '..\..\../decorators/field.decorators';
 
 export class GetCoursesReqDto extends PageOptionsDto {
   @BooleanFieldOptional({

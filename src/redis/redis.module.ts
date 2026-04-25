@@ -3,7 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CacheModule } from '@nestjs/cache-manager';
 import { BullModule } from '@nestjs/bullmq';
 import KeyvRedis from '@keyv/redis';
-import { AllConfigType } from '@/config/config.type';
+import { AllConfigType } from '../config/config.type';
 import redisConfig from './redis.config';
 
 @Global()

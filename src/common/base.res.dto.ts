@@ -1,5 +1,5 @@
 import { Expose } from 'class-transformer';
-import { DateField } from '@/decorators/field.decorators';
+import { DateField } from '../decorators/field.decorators';
 
 export abstract class BaseResDto {
   @Expose()

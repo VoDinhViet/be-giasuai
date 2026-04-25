@@ -1,4 +1,4 @@
-import { type AllConfigType } from '@/config/config.type';
+import { type AllConfigType } from '../config/config.type';
 import { type INestApplication } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';

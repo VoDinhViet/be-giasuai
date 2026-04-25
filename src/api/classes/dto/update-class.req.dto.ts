@@ -1,7 +1,7 @@
 import {
   BooleanFieldOptional,
   StringFieldOptional,
-} from '@/decorators/field.decorators';
+} from '..\..\../decorators/field.decorators';
 
 export class UpdateClassReqDto {
   @StringFieldOptional({ description: 'Tên lớp học' })

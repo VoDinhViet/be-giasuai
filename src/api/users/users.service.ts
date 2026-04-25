@@ -1,11 +1,11 @@
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { AppException } from '@/exceptions/app.exception';
-import { ErrorCode } from '@/constants/error-code.constant';
-import { DRIZZLE } from '@/database/database.module';
-import type { Database } from '@/database/database.type';
-import { users } from '@/database/schemas/users';
-import { sessions } from '@/database/schemas/sessions';
+import { AppException } from '..\../exceptions/app.exception';
+import { ErrorCode } from '..\../constants/error-code.constant';
+import { DRIZZLE } from '..\../database/database.module';
+import type { Database } from '..\../database/database.type';
+import { users } from '..\../database/schemas/users';
+import { sessions } from '..\../database/schemas/sessions';
 import {
   and,
   asc,
@@ -19,12 +19,12 @@ import {
   type SQL,
 } from 'drizzle-orm';
 import { GetUsersDto } from './dto/get-users.dto';
-import { PageOptionsDto } from '@/common/offset-pagination/page-options.dto';
-import { OffsetPaginatedDto } from '@/common/offset-pagination/paginated.dto';
-import { OffsetPaginationDto } from '@/common/offset-pagination/offset-pagination.dto';
+import { PageOptionsDto } from '..\../common/offset-pagination/page-options.dto';
+import { OffsetPaginatedDto } from '..\../common/offset-pagination/paginated.dto';
+import { OffsetPaginationDto } from '..\../common/offset-pagination/offset-pagination.dto';
 import { UserResDto } from './dto/user.res.dto';
 import { plainToInstance } from 'class-transformer';
-import { OrderBy } from '@/constants/app.constant';
+import { OrderBy } from '..\../constants/app.constant';
 import { UserStatsResDto } from './dto/user-stats.res.dto';
 import { LockUserDto } from './dto/lock-user.dto';
 import { CreateUserDto } from './dto/create-user.dto';

@@ -10,13 +10,13 @@ import {
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
-import { PageOptionsDto } from '@/common/offset-pagination/page-options.dto';
-import { OffsetPaginatedDto } from '@/common/offset-pagination/paginated.dto';
-import { Role } from '@/constants/role.constant';
-import { ApiAuth, ApiPublic } from '@/decorators/http.decorators';
-import { UUIDParam } from '@/decorators/param.decorators';
-import { Roles } from '@/decorators/roles.decorator';
-import { User } from '@/decorators/user.decorator';
+import { PageOptionsDto } from '..\../common/offset-pagination/page-options.dto';
+import { OffsetPaginatedDto } from '..\../common/offset-pagination/paginated.dto';
+import { Role } from '..\../constants/role.constant';
+import { ApiAuth, ApiPublic } from '..\../decorators/http.decorators';
+import { UUIDParam } from '..\../decorators/param.decorators';
+import { Roles } from '..\../decorators/roles.decorator';
+import { User } from '..\../decorators/user.decorator';
 
 import { JwtPayloadType } from '../auth/types/jwt-payload.type';
 import { ClassesService } from './classes.service';

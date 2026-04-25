@@ -5,7 +5,7 @@ import {
   StringField,
   StringFieldOptional,
   UUIDField,
-} from '@/decorators/field.decorators';
+} from '..\..\../decorators/field.decorators';
 
 import { CourseLessonResDto } from './course-lesson.res.dto';
 

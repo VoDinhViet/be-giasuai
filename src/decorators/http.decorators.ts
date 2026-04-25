@@ -14,7 +14,7 @@ import {
   ApiSecurity,
 } from '@nestjs/swagger';
 import { STATUS_CODES } from 'http';
-import { ErrorDto } from '@/common/dto/error.dto';
+import { ErrorDto } from '../common/dto/error.dto';
 import { ApiPaginatedResponse } from './swagger.decorators';
 import { Public } from './public.decorator';
 
