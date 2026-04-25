@@ -28,10 +28,9 @@ import { Environment } from './constants/app.constant';
 export async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-  app.set('trust proxy', 1); // Trust first proxy (Nginx, Cloudflare...)
-
-  app.use(helmet()); // Security headers
-  app.use(compression()); // Gzip compression — disable if using Nginx/reverse proxy
+  app.set('trust proxy', 1);
+  app.use(helmet());
+  app.use(compression());
 
   const configService = app.get(ConfigService<AllConfigType>);
 
@@ -44,14 +43,13 @@ export async function bootstrap() {
 
   const reflector = app.get(Reflector);
 
-  // Prefix /api, exclude root and health check from versioning
   app.setGlobalPrefix('api', {
     exclude: [
       { method: RequestMethod.GET, path: '/' },
       { method: RequestMethod.GET, path: 'health' },
     ],
   });
-  app.enableVersioning({ type: VersioningType.URI }); // /api/v1/...
+  app.enableVersioning({ type: VersioningType.URI });
 
   app.useGlobalFilters(new GlobalExceptionFilter(configService));
   app.useGlobalGuards(app.get(AuthGuard), app.get(RolesGuard));
@@ -66,11 +64,7 @@ export async function bootstrap() {
   );
   app.useGlobalInterceptors(new ClassSerializerInterceptor(reflector));
 
-  // Only expose Swagger in non-production environments
-  if (
-    configService.getOrThrow('app.nodeEnv', { infer: true }) !==
-    Environment.PRODUCTION
-  ) {
+  if (configService.getOrThrow('app.nodeEnv', { infer: true }) !== Environment.PRODUCTION) {
     setupSwagger(app);
   }
 
@@ -78,22 +72,20 @@ export async function bootstrap() {
   return app.getHttpAdapter().getInstance();
 }
 
+// For local development
 if (process.env.NODE_ENV !== 'production') {
-  bootstrap().then(async (server) => {
+  bootstrap().then(async (instance) => {
     const port = process.env.APP_PORT || 3000;
-    await server.listen(port);
-    Logger.log(
-      `==========================================================`,
-      'Bootstrap',
-    );
-    Logger.log(
-      `🚀 Application is running on: http://localhost:${port}/api`,
-      'Bootstrap',
-    );
-    Logger.log(
-      `==========================================================`,
-      'Bootstrap',
-    );
+    await instance.listen(port);
+    Logger.log(`🚀 Application is running on: http://localhost:${port}/api`, 'Bootstrap');
   });
 }
+
+// For Vercel Serverless Function
+const serverPromise = bootstrap();
+export default async (req: any, res: any) => {
+  const server = await serverPromise;
+  return server(req, res);
+};
+
 
