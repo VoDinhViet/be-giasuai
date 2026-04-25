@@ -11,11 +11,7 @@ import {
   Min,
 } from 'class-validator';
 
-enum Environment {
-  Development = 'development',
-  Production = 'production',
-  Test = 'test',
-}
+import { Environment } from '../constants/app.constant';
 
 class EnvironmentVariablesValidator {
   @IsEnum(Environment)
@@ -47,6 +43,10 @@ class EnvironmentVariablesValidator {
   @IsString()
   @IsOptional()
   APP_HEADER_LANGUAGE: string;
+
+  @IsString()
+  @IsOptional()
+  APP_CORS_ORIGIN: string;
 }
 
 export default registerAs<AppConfig>('app', () => {
@@ -66,5 +66,8 @@ export default registerAs<AppConfig>('app', () => {
     apiPrefix: process.env.API_PREFIX || 'api',
     fallbackLanguage: process.env.APP_FALLBACK_LANGUAGE || 'en',
     headerLanguage: process.env.APP_HEADER_LANGUAGE || 'x-custom-lang',
+    corsOrigin: process.env.APP_CORS_ORIGIN
+      ? process.env.APP_CORS_ORIGIN.split(',')
+      : true,
   };
 });
