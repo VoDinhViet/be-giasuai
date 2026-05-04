@@ -148,6 +148,20 @@
       "when": 1777713845490,
       "tag": "0020_happy_spyke",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1777866861556,
+      "tag": "0021_stormy_jackal",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1777867172276,
+      "tag": "0022_dark_quasimodo",
+      "breakpoints": true
     }
   ]
 }

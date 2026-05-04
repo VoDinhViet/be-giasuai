@@ -17,10 +17,7 @@ import {
   courses,
   lessons,
   lessonParts,
-  schoolLevels,
-  grades,
-  majors,
-  subjects,
+  categories,
 } from '../../database/schemas';
 import { AppException } from '../../exceptions/app.exception';
 
@@ -63,7 +60,7 @@ export class CoursesService {
         thumbnailUrl: dto.thumbnailUrl,
         tags: dto.tags,
         learningOutcomes: dto.learningOutcomes,
-        schoolLevelId: dto.levelId,
+        levelId: dto.levelId,
         gradeId: dto.gradeId,
         majorId: dto.majorId,
         subjectId: dto.subjectId,
@@ -97,7 +94,7 @@ export class CoursesService {
       thumbnailUrl: dto.thumbnailUrl,
       tags: dto.tags,
       learningOutcomes: dto.learningOutcomes,
-      schoolLevelId: dto.levelId,
+      levelId: dto.levelId,
       gradeId: dto.gradeId,
       majorId: dto.majorId,
       subjectId: dto.subjectId,

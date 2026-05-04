@@ -1,5 +1,5 @@
 import { Expose } from 'class-transformer';
-
+import { ToFileUrl } from '../../../decorators/transform.decorators';
 import {
   BooleanField,
   StringField,
@@ -28,6 +28,7 @@ export class CourseResDto {
 
   @URLFieldOptional({ description: 'Anh dai dien khoa hoc' })
   @Expose()
+  @ToFileUrl()
   thumbnailUrl?: string | null;
 
   @StringFieldOptional({ description: 'Danh sach tag khoa hoc', each: true })
@@ -47,7 +48,7 @@ export class CourseResDto {
 
   @UUIDFieldOptional({ description: 'ID cấp học' })
   @Expose()
-  schoolLevelId?: string | null;
+  levelId?: string | null;
 
   @UUIDFieldOptional({ description: 'ID khối lớp' })
   @Expose()

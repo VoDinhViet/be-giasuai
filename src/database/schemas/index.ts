@@ -8,5 +8,5 @@ export * from './courses/lesson-resources';
 export * from './classes';
 export * from './class-courses';
 export * from './class-enrollments';
-export * from './academic-catalog';
+export * from './categories';
 export * from './relation';

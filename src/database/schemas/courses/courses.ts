@@ -8,12 +8,7 @@ import {
   uuid,
 } from 'drizzle-orm/pg-core';
 import { users } from '../users';
-import {
-  schoolLevels,
-  grades,
-  majors,
-  subjects,
-} from '../academic-catalog';
+import { categories } from '../categories';
 
 export const courseLevelEnum = pgEnum('course_level', [
   'BEGINNER',
@@ -47,17 +42,17 @@ export const courses = pgTable('courses', {
   // Mục tiêu/Kết quả học tập (Ví dụ: ["Biết cách sử dụng Hook", "Hiểu về Virtual DOM"])
   learningOutcomes: text('learning_outcomes').array().default([]).notNull(),
   
-  // Liên kết với Danh mục học thuật
-  schoolLevelId: uuid('school_level_id').references(() => schoolLevels.id, {
+  // Liên kết với Danh mục học thuật (Categories)
+  levelId: uuid('level_id').references(() => categories.id, {
     onDelete: 'set null',
   }),
-  gradeId: uuid('grade_id').references(() => grades.id, {
+  gradeId: uuid('grade_id').references(() => categories.id, {
     onDelete: 'set null',
   }),
-  majorId: uuid('major_id').references(() => majors.id, {
+  majorId: uuid('major_id').references(() => categories.id, {
     onDelete: 'set null',
   }),
-  subjectId: uuid('subject_id').references(() => subjects.id, {
+  subjectId: uuid('subject_id').references(() => categories.id, {
     onDelete: 'set null',
   }),
   

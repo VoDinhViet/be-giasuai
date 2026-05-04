@@ -70,3 +70,15 @@ export function Trim(): PropertyDecorator {
     return trim(value);
   });
 }
+
+export function ToFileUrl(): PropertyDecorator {
+  return Transform(({ value }) => {
+    if (value && typeof value === 'string' && !value.startsWith('http')) {
+      const backendDomain =
+        process.env.BACKEND_DOMAIN || 'http://localhost:8003';
+      console.log(`${backendDomain}/${value.replace(/^\//, '')}`);
+      return `${backendDomain}/${value.replace(/^\//, '')}`;
+    }
+    return value;
+  });
+}

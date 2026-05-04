@@ -33,7 +33,11 @@ export async function bootstrap(): Promise<Express> {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   app.set('trust proxy', 1);
-  app.use(helmet());
+  app.use(
+    helmet({
+      crossOriginResourcePolicy: { policy: 'cross-origin' },
+    }),
+  );
   app.use(compression());
 
   app.useStaticAssets(join(process.cwd(), 'uploads'), {
