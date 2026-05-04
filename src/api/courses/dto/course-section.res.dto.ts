@@ -7,7 +7,7 @@ import {
   UUIDField,
 } from '../../../decorators/field.decorators';
 
-import { CourseLessonResDto } from './course-lesson.res.dto';
+import { LessonResDto } from './lesson.res.dto';
 
 export class CourseSectionResDto {
   @UUIDField({ description: 'ID chuong hoc' })
@@ -30,9 +30,9 @@ export class CourseSectionResDto {
   @Expose()
   position: number;
 
-  @Type(() => CourseLessonResDto)
+  @Type(() => LessonResDto)
   @Expose()
-  lessons: CourseLessonResDto[];
+  lessons: LessonResDto[];
 
   @Expose()
   createdAt: Date;

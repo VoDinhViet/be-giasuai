@@ -15,6 +15,7 @@ import { ConfigService } from '@nestjs/config';
 import { NestFactory, Reflector } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { ValidationError } from 'class-validator';
+import { join } from 'path';
 import compression from 'compression';
 import type { Express, Request, Response } from 'express';
 import helmet from 'helmet';
@@ -34,6 +35,10 @@ export async function bootstrap(): Promise<Express> {
   app.set('trust proxy', 1);
   app.use(helmet());
   app.use(compression());
+
+  app.useStaticAssets(join(process.cwd(), 'uploads'), {
+    prefix: '/uploads/',
+  });
 
   const configService = app.get(ConfigService<AllConfigType>);
 
@@ -93,7 +98,7 @@ export default async function handler(req: Request, res: Response) {
 
 if (require.main === module) {
   getServer().then((instance) => {
-    const port = process.env.APP_PORT || 3000;
+    const port = process.env.PORT || 3000;
     instance.listen(port);
     Logger.log(
       `Application is running on: http://localhost:${port}/api`,

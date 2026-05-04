@@ -1,7 +1,7 @@
 import { pgTable, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
 
 import { classes } from './classes';
-import { courses } from './courses';
+import { courses } from './courses/courses';
 import { users } from './users';
 
 export const classCourses = pgTable(

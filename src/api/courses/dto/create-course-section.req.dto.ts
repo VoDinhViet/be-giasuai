@@ -1,8 +1,10 @@
 import {
+  ClassFieldOptional,
   NumberField,
   StringField,
   StringFieldOptional,
 } from '../../../decorators/field.decorators';
+import { CreateLessonReqDto } from './create-lesson.req.dto';
 
 export class CreateCourseSectionReqDto {
   @StringField({ description: 'Ten chuong hoc' })
@@ -17,4 +19,10 @@ export class CreateCourseSectionReqDto {
     min: 1,
   })
   position: number;
+
+  @ClassFieldOptional(() => CreateLessonReqDto, {
+    description: 'Danh sách module bài học',
+    each: true,
+  })
+  lessons?: CreateLessonReqDto[];
 }

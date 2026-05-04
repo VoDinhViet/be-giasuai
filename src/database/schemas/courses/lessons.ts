@@ -10,28 +10,35 @@ import {
 
 import { courseSections } from './course-sections';
 
-export const lessonTypeEnum = pgEnum('lesson_type', [
-  'VIDEO',
-  'READING',
-  'QUIZ',
-  'ASSIGNMENT',
-  'LIVE_SESSION',
-]);
 
-export const courseLessons = pgTable('course_lessons', {
+
+/**
+ * Bảng bài học (Lessons)
+ * Các bài học chi tiết nằm trong từng chương.
+ */
+export const lessons = pgTable('lessons', {
   id: uuid('id').defaultRandom().primaryKey(),
+  
+  // Liên kết với chương học
   sectionId: uuid('section_id')
     .notNull()
     .references(() => courseSections.id, { onDelete: 'cascade' }),
+  
+  // Tiêu đề bài học (Ví dụ: "Bài 1: Cài đặt môi trường")
   title: text('title').notNull(),
-  summary: text('summary'),
-  content: text('content'),
-  videoUrl: text('video_url'),
-  lessonType: lessonTypeEnum('lesson_type').default('READING').notNull(),
+  
+
+
+  // Thời lượng ước tính (phút)
   durationMinutes: integer('duration_minutes').default(0).notNull(),
+  
+  // Thứ tự hiển thị trong chương
   position: integer('position').notNull(),
+  
+  // Các cờ trạng thái
   isPreview: boolean('is_preview').default(false).notNull(),
   isPublished: boolean('is_published').default(false).notNull(),
+  
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at')
     .defaultNow()
@@ -39,5 +46,5 @@ export const courseLessons = pgTable('course_lessons', {
     .notNull(),
 });
 
-export type CourseLesson = typeof courseLessons.$inferSelect;
-export type NewCourseLesson = typeof courseLessons.$inferInsert;
+export type Lesson = typeof lessons.$inferSelect;
+export type NewLesson = typeof lessons.$inferInsert;

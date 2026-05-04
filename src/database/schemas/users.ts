@@ -7,7 +7,7 @@ import {
   uuid,
 } from 'drizzle-orm/pg-core';
 
-export const userRoleEnum = pgEnum('user_role', ['ADMIN', 'USER', 'TEACHER']);
+export const userRoleEnum = pgEnum('user_role', ['ADMIN', 'STUDENT', 'TEACHER']);
 
 export const users = pgTable('users', {
   id: uuid('id').defaultRandom().primaryKey(),
@@ -15,7 +15,7 @@ export const users = pgTable('users', {
   username: text('username').notNull().unique(),
   fullName: text('full_name').notNull(),
   password: text('password').notNull(),
-  role: userRoleEnum('role').default('USER').notNull(),
+  role: userRoleEnum('role').default('STUDENT').notNull(),
   isLocked: boolean('is_locked').default(false).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at')

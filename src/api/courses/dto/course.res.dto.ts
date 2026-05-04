@@ -2,15 +2,12 @@ import { Expose } from 'class-transformer';
 
 import {
   BooleanField,
-  EnumField,
-  NumberField,
   StringField,
   StringFieldOptional,
   URLFieldOptional,
   UUIDField,
   UUIDFieldOptional,
 } from '../../../decorators/field.decorators';
-import { CourseLevel } from './course-level.enum';
 
 export class CourseResDto {
   @UUIDField({ description: 'ID khoa hoc' })
@@ -29,37 +26,9 @@ export class CourseResDto {
   @Expose()
   description?: string | null;
 
-  @StringFieldOptional({ description: 'Mo ta ngan khoa hoc' })
-  @Expose()
-  shortDescription?: string | null;
-
   @URLFieldOptional({ description: 'Anh dai dien khoa hoc' })
   @Expose()
   thumbnailUrl?: string | null;
-
-  @URLFieldOptional({ description: 'Video gioi thieu khoa hoc' })
-  @Expose()
-  introVideoUrl?: string | null;
-
-  @UUIDFieldOptional({ description: 'ID giao vien phu trach' })
-  @Expose()
-  teacherId?: string | null;
-
-  @EnumField(() => CourseLevel, { description: 'Cap do khoa hoc' })
-  @Expose()
-  level: CourseLevel;
-
-  @NumberField({ description: 'Hoc phi khoa hoc', int: true, min: 0 })
-  @Expose()
-  price: number;
-
-  @NumberField({
-    description: 'Tong thoi luong uoc tinh theo phut',
-    int: true,
-    min: 0,
-  })
-  @Expose()
-  estimatedDurationMinutes: number;
 
   @StringFieldOptional({ description: 'Danh sach tag khoa hoc', each: true })
   @Expose()
@@ -75,6 +44,22 @@ export class CourseResDto {
   @BooleanField({ description: 'Trang thai xuat ban' })
   @Expose()
   isPublished: boolean;
+
+  @UUIDFieldOptional({ description: 'ID cấp học' })
+  @Expose()
+  schoolLevelId?: string | null;
+
+  @UUIDFieldOptional({ description: 'ID khối lớp' })
+  @Expose()
+  gradeId?: string | null;
+
+  @UUIDFieldOptional({ description: 'ID chuyên ngành/khối' })
+  @Expose()
+  majorId?: string | null;
+
+  @UUIDFieldOptional({ description: 'ID môn học' })
+  @Expose()
+  subjectId?: string | null;
 
   @Expose()
   createdAt: Date;

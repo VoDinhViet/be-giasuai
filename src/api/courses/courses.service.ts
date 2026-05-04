@@ -1,50 +1,57 @@
 import { randomBytes } from 'crypto';
+import { mkdir, writeFile, unlink } from 'fs/promises';
+import { extname, join } from 'path';
 
-import { HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { HttpStatus, Inject, Injectable, Logger } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
-import { and, asc, count, desc, eq, ilike, or, SQL } from 'drizzle-orm';
+import { and, asc, count, desc, eq, ilike, or } from 'drizzle-orm';
 
-import { JwtPayloadType } from '../../api/auth/types/jwt-payload.type';
 import { OffsetPaginatedDto } from '../../common/offset-pagination/paginated.dto';
 import { OffsetPaginationDto } from '../../common/offset-pagination/offset-pagination.dto';
 import { OrderBy } from '../../constants/app.constant';
 import { ErrorCode } from '../../constants/error-code.constant';
-import { Role } from '../../constants/role.constant';
 import { DRIZZLE } from '../../database/database.module';
 import type { Database } from '../../database/database.type';
 import {
-  courseLessons,
-  courseResources,
   courseSections,
   courses,
+  lessons,
+  lessonParts,
+  schoolLevels,
+  grades,
+  majors,
+  subjects,
 } from '../../database/schemas';
 import { AppException } from '../../exceptions/app.exception';
 
-import { CourseContentResDto } from './dto/course-content.res.dto';
-import { CourseDetailLessonResDto } from './dto/course-detail-lesson.res.dto';
 import { CourseDetailResDto } from './dto/course-detail.res.dto';
+import { CourseCurriculumResDto } from './dto/course-curriculum.res.dto';
+import { CourseDetailLessonResDto } from './dto/course-detail-lesson.res.dto';
 import { CourseDetailSectionResDto } from './dto/course-detail-section.res.dto';
-import { CourseLessonResDto } from './dto/course-lesson.res.dto';
-import { CourseResourceResDto } from './dto/course-resource.res.dto';
+
 import { CourseResDto } from './dto/course.res.dto';
-import { CourseSectionResDto } from './dto/course-section.res.dto';
 import { CreateCourseReqDto } from './dto/create-course.req.dto';
-import { CreateCourseLessonReqDto } from './dto/create-course-lesson.req.dto';
-import { CreateCourseResourceReqDto } from './dto/create-course-resource.req.dto';
-import { CreateCourseSectionReqDto } from './dto/create-course-section.req.dto';
 import { GetCoursesReqDto } from './dto/get-courses.req.dto';
-import { UpdateCourseLessonReqDto } from './dto/update-course-lesson.req.dto';
-import { UpdateCourseResourceReqDto } from './dto/update-course-resource.req.dto';
-import { UpdateCourseSectionReqDto } from './dto/update-course-section.req.dto';
+import {
+  UpdateCourseCurriculumReqDto,
+  UpdateCourseLessonPartReqDto,
+  UpdateCourseLessonReqDto,
+  UpdateCourseSectionReqDto,
+} from './dto/update-course-curriculum.req.dto';
+import { UpdateCourseReqDto } from './dto/update-course.req.dto';
+import { SimulationType } from './dto/simulation-type.enum';
 
 @Injectable()
 export class CoursesService {
   constructor(
     @Inject(DRIZZLE)
     private readonly db: Database,
-  ) { }
+  ) {}
 
-  async createCourse(dto: CreateCourseReqDto): Promise<CourseResDto> {
+  async createCourse(
+    dto: CreateCourseReqDto,
+    thumbnail?: Express.Multer.File,
+  ): Promise<CourseResDto> {
     const slug = await this.generateUniqueSlug(dto.title);
 
     const [createdCourse] = await this.db
@@ -52,55 +59,302 @@ export class CoursesService {
       .values({
         title: dto.title,
         description: dto.description,
-        shortDescription: dto.shortDescription,
         slug,
         thumbnailUrl: dto.thumbnailUrl,
-        introVideoUrl: dto.introVideoUrl,
-        teacherId: dto.teacherId,
-        level: dto.level,
-        price: dto.price,
-        estimatedDurationMinutes: dto.estimatedDurationMinutes,
         tags: dto.tags,
         learningOutcomes: dto.learningOutcomes,
+        schoolLevelId: dto.levelId,
+        gradeId: dto.gradeId,
+        majorId: dto.majorId,
+        subjectId: dto.subjectId,
       })
-      .returning({
-        id: courses.id,
-        title: courses.title,
-        slug: courses.slug,
-        description: courses.description,
-        shortDescription: courses.shortDescription,
-        thumbnailUrl: courses.thumbnailUrl,
-        introVideoUrl: courses.introVideoUrl,
-        teacherId: courses.teacherId,
-        level: courses.level,
-        price: courses.price,
-        estimatedDurationMinutes: courses.estimatedDurationMinutes,
-        tags: courses.tags,
-        learningOutcomes: courses.learningOutcomes,
-        isPublished: courses.isPublished,
-        createdAt: courses.createdAt,
-        updatedAt: courses.updatedAt,
-      });
+      .returning();
 
-    return plainToInstance(CourseResDto, createdCourse);
+    if (!thumbnail) {
+      return plainToInstance(CourseResDto, createdCourse);
+    }
+
+    const thumbnailUrl = await this.uploadThumbnail(thumbnail, slug);
+    const [updatedCourse] = await this.db
+      .update(courses)
+      .set({ thumbnailUrl })
+      .where(eq(courses.id, createdCourse.id))
+      .returning();
+
+    return plainToInstance(CourseResDto, updatedCourse);
   }
 
-  /**
-   * Lấy danh sách khóa học có phân trang và bộ lọc.
-   *
-   * @param pageOptions - Tùy chọn phân trang và bộ lọc (q, isPublished).
-   * @returns Danh sách khóa học đã phân trang.
-   */
+  async updateCourse(
+    courseId: string,
+    dto: UpdateCourseReqDto,
+    thumbnail?: Express.Multer.File,
+  ): Promise<void> {
+    const course = await this.validateCourseExists(this.db, courseId);
+
+    const updateData: any = {
+      title: dto.title,
+      description: dto.description,
+      thumbnailUrl: dto.thumbnailUrl,
+      tags: dto.tags,
+      learningOutcomes: dto.learningOutcomes,
+      schoolLevelId: dto.levelId,
+      gradeId: dto.gradeId,
+      majorId: dto.majorId,
+      subjectId: dto.subjectId,
+    };
+
+    if (dto.title) {
+      updateData.slug = await this.generateUniqueSlug(dto.title);
+    }
+
+    if (thumbnail) {
+      // Delete old thumbnail if exists
+      if (course.thumbnailUrl) {
+        const oldPath = join(process.cwd(), course.thumbnailUrl);
+        try {
+          await unlink(oldPath);
+        } catch (error) {
+          console.error(`Failed to delete old thumbnail: ${oldPath}`, error);
+        }
+      }
+      updateData.thumbnailUrl = await this.uploadThumbnail(
+        thumbnail,
+        updateData.slug || course.slug,
+      );
+    }
+
+    await this.db
+      .update(courses)
+      .set(updateData)
+      .where(eq(courses.id, courseId));
+  }
+
+  async deleteCourse(courseId: string): Promise<void> {
+    const course = await this.db.query.courses.findFirst({
+      where: eq(courses.id, courseId),
+    });
+
+    if (!course) {
+      throw new AppException(
+        ErrorCode.E105,
+        'Course not found',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    // Delete thumbnail file if exists
+    if (course.thumbnailUrl) {
+      const filePath = join(process.cwd(), course.thumbnailUrl);
+      try {
+        await unlink(filePath);
+      } catch (error) {
+        // Log error but don't stop deletion if file missing
+        console.error(`Failed to delete thumbnail file: ${filePath}`, error);
+      }
+    }
+
+    await this.db.delete(courses).where(eq(courses.id, courseId));
+  }
+
+  async syncCurriculum(
+    courseId: string,
+    reqDto: UpdateCourseCurriculumReqDto,
+    files: Express.Multer.File[],
+  ): Promise<void> {
+    const sections = reqDto.courseSections;
+    const logger = new Logger('CoursesService');
+
+    if (!Array.isArray(sections)) {
+      throw new AppException(
+        ErrorCode.E105,
+        'Curriculum sections must be an array',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    logger.log(`[SYNC START] Course: ${courseId} | Sections: ${sections.length}`);
+
+    await this.db.transaction(async (tx) => {
+      const course = await this.validateCourseExists(tx, courseId);
+
+      // Clear existing curriculum (Cascade delete handles lessons and parts)
+      logger.log(`  [CLEAN] Removing old curriculum for course ${courseId}...`);
+      await tx
+        .delete(courseSections)
+        .where(eq(courseSections.courseId, courseId));
+
+      // Re-insert curriculum tree
+      for (let sIdx = 0; sIdx < sections.length; sIdx++) {
+        logger.log(`  [SECTION ${sIdx + 1}/${sections.length}] Processing: ${sections[sIdx].title}`);
+        await this.processSection(
+          tx,
+          courseId,
+          sections[sIdx],
+          sIdx,
+          files,
+          course.slug,
+        );
+      }
+    });
+
+    logger.log(`[SYNC SUCCESS] Course: ${courseId}`);
+  }
+
+  private async validateCourseExists(tx: Database, courseId: string) {
+    const course = await tx.query.courses.findFirst({
+      where: eq(courses.id, courseId),
+    });
+
+    if (!course) {
+      throw new AppException(
+        ErrorCode.E105,
+        'Course not found',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    return course;
+  }
+
+  private async processSection(
+    tx: Database,
+    courseId: string,
+    sectionDto: UpdateCourseSectionReqDto,
+    sIdx: number,
+    files: Express.Multer.File[],
+    courseSlug: string,
+  ) {
+    if (!sectionDto.title) {
+      console.error(`Missing title for section at index ${sIdx}`, sectionDto);
+      throw new AppException(
+        ErrorCode.E105,
+        `Missing title for section ${sIdx + 1}`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const [section] = await tx
+      .insert(courseSections)
+      .values({
+        courseId,
+        title: sectionDto.title,
+        position: sIdx + 1,
+      })
+      .returning();
+
+    const lessonsCount = sectionDto.lessons?.length || 0;
+    for (let lIdx = 0; lIdx < lessonsCount; lIdx++) {
+      const lessonDto = sectionDto.lessons![lIdx];
+      console.log(`    └─ [LESSON ${lIdx + 1}/${lessonsCount}] ${lessonDto.title}`);
+      await this.processLesson(
+        tx,
+        section.id,
+        lessonDto,
+        sIdx,
+        lIdx,
+        files,
+        courseSlug,
+      );
+    }
+  }
+
+  private async processLesson(
+    tx: Database,
+    sectionId: string,
+    lessonDto: UpdateCourseLessonReqDto,
+    sIdx: number,
+    lIdx: number,
+    files: Express.Multer.File[],
+    courseSlug: string,
+  ) {
+    const [lesson] = await tx
+      .insert(lessons)
+      .values({
+        sectionId,
+        title: lessonDto.title,
+        position: lIdx + 1,
+      })
+      .returning();
+
+    const lessonPartsCount = lessonDto.lessonParts?.length || 0;
+    for (let ssIdx = 0; ssIdx < lessonPartsCount; ssIdx++) {
+      const lessonPartDto = lessonDto.lessonParts![ssIdx];
+      console.log(`        └─ [LESSON PART ${ssIdx + 1}/${lessonPartsCount}] ${lessonPartDto.title}`);
+      await this.processLessonPart(
+        tx,
+        lesson.id,
+        lessonPartDto,
+        sIdx,
+        lIdx,
+        ssIdx,
+        files,
+        courseSlug,
+      );
+    }
+  }
+
+  private async processLessonPart(
+    tx: Database,
+    lessonId: string,
+    lessonPartDto: UpdateCourseLessonPartReqDto,
+    sIdx: number,
+    lIdx: number,
+    ssIdx: number,
+    files: Express.Multer.File[],
+    courseSlug: string,
+  ) {
+    const fileKey = `file_s${sIdx}_l${lIdx}_ss${ssIdx}`;
+    const file = files?.find((f) => f.fieldname === fileKey);
+    console.log('File: ', file);
+
+    let fileUrl = '';
+    let partType: 'PDF' | 'DOCX' = 'PDF';
+
+    if (file) {
+      fileUrl = await this.saveLessonPartFile(file, courseSlug);
+      partType = file.originalname.toLowerCase().endsWith('.docx')
+        ? 'DOCX'
+        : 'PDF';
+    } else if (typeof lessonPartDto.file === 'string') {
+      fileUrl = lessonPartDto.file;
+      partType = fileUrl.toLowerCase().endsWith('.docx') ? 'DOCX' : 'PDF';
+    }
+
+    if (fileUrl) {
+      await tx.insert(lessonParts).values({
+        lessonId,
+        title: lessonPartDto.title,
+        fileUrl,
+        partType,
+        position: ssIdx + 1,
+      });
+    }
+  }
+
+  private async saveLessonPartFile(
+    file: Express.Multer.File,
+    slug: string,
+  ): Promise<string> {
+    const uploadDir = join(process.cwd(), 'uploads', 'lessons');
+    await mkdir(uploadDir, { recursive: true });
+
+    const filename = this.buildFileName('lesson-doc', slug, file.originalname);
+    const filePath = join(uploadDir, filename);
+
+    await writeFile(filePath, file.buffer);
+
+    return `/uploads/lessons/${filename}`;
+  }
+
   async getCourses(
     pageOptions: GetCoursesReqDto,
   ): Promise<OffsetPaginatedDto<CourseResDto>> {
     const where = and(
       pageOptions.q
         ? or(
-          ilike(courses.title, `%${pageOptions.q}%`),
-          ilike(courses.slug, `%${pageOptions.q}%`),
-          ilike(courses.description, `%${pageOptions.q}%`),
-        )
+            ilike(courses.title, `%${pageOptions.q}%`),
+            ilike(courses.slug, `%${pageOptions.q}%`),
+            ilike(courses.description, `%${pageOptions.q}%`),
+          )
         : undefined,
       pageOptions.isPublished !== undefined
         ? eq(courses.isPublished, pageOptions.isPublished)
@@ -128,138 +382,9 @@ export class CoursesService {
     );
   }
 
-
   async getCourseDetail(courseId: string): Promise<CourseDetailResDto> {
     const course = await this.db.query.courses.findFirst({
       where: eq(courses.id, courseId),
-      columns: {
-        id: true,
-        title: true,
-        slug: true,
-        description: true,
-        shortDescription: true,
-        thumbnailUrl: true,
-        introVideoUrl: true,
-        teacherId: true,
-        level: true,
-        price: true,
-        estimatedDurationMinutes: true,
-        tags: true,
-        learningOutcomes: true,
-        isPublished: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
-
-    if (!course || !course.isPublished) {
-      throw new AppException(
-        ErrorCode.E105,
-        'Course not found',
-        HttpStatus.NOT_FOUND,
-      );
-    }
-
-    const [sectionRows, lessonRows] = await Promise.all([
-      this.db
-        .select({
-          id: courseSections.id,
-          courseId: courseSections.courseId,
-          title: courseSections.title,
-          description: courseSections.description,
-          position: courseSections.position,
-          createdAt: courseSections.createdAt,
-          updatedAt: courseSections.updatedAt,
-        })
-        .from(courseSections)
-        .where(eq(courseSections.courseId, courseId))
-        .orderBy(asc(courseSections.position), asc(courseSections.createdAt)),
-      this.db
-        .select({
-          id: courseLessons.id,
-          sectionId: courseLessons.sectionId,
-          title: courseLessons.title,
-          summary: courseLessons.summary,
-          lessonType: courseLessons.lessonType,
-          durationMinutes: courseLessons.durationMinutes,
-          position: courseLessons.position,
-          isPreview: courseLessons.isPreview,
-          isPublished: courseLessons.isPublished,
-          createdAt: courseLessons.createdAt,
-          updatedAt: courseLessons.updatedAt,
-        })
-        .from(courseLessons)
-        .innerJoin(
-          courseSections,
-          eq(courseLessons.sectionId, courseSections.id),
-        )
-        .where(
-          and(
-            eq(courseSections.courseId, courseId),
-            eq(courseLessons.isPublished, true),
-          ),
-        )
-        .orderBy(asc(courseLessons.position), asc(courseLessons.createdAt)),
-    ]);
-
-    const lessonsBySection = new Map<string, CourseDetailLessonResDto[]>();
-
-    lessonRows.forEach((lesson) => {
-      const items = lessonsBySection.get(lesson.sectionId) ?? [];
-      items.push(plainToInstance(CourseDetailLessonResDto, lesson));
-      lessonsBySection.set(lesson.sectionId, items);
-    });
-
-    return plainToInstance(CourseDetailResDto, {
-      id: course.id,
-      title: course.title,
-      slug: course.slug,
-      description: course.description,
-      shortDescription: course.shortDescription,
-      thumbnailUrl: course.thumbnailUrl,
-      introVideoUrl: course.introVideoUrl,
-      teacherId: course.teacherId,
-      level: course.level,
-      price: course.price,
-      estimatedDurationMinutes: course.estimatedDurationMinutes,
-      tags: course.tags,
-      learningOutcomes: course.learningOutcomes,
-      isPublished: course.isPublished,
-      createdAt: course.createdAt,
-      updatedAt: course.updatedAt,
-      sections: sectionRows.map((section) =>
-        plainToInstance(CourseDetailSectionResDto, {
-          ...section,
-          lessons: lessonsBySection.get(section.id) ?? [],
-        }),
-      ),
-    });
-  }
-
-  async getCourseContent(
-    courseId: string,
-    payload: JwtPayloadType,
-  ): Promise<CourseContentResDto> {
-    const course = await this.db.query.courses.findFirst({
-      where: eq(courses.id, courseId),
-      columns: {
-        id: true,
-        title: true,
-        slug: true,
-        description: true,
-        shortDescription: true,
-        thumbnailUrl: true,
-        introVideoUrl: true,
-        teacherId: true,
-        level: true,
-        price: true,
-        estimatedDurationMinutes: true,
-        tags: true,
-        learningOutcomes: true,
-        isPublished: true,
-        createdAt: true,
-        updatedAt: true,
-      },
     });
 
     if (!course) {
@@ -270,405 +395,46 @@ export class CoursesService {
       );
     }
 
-    if (payload.role === Role.USER && !course.isPublished) {
+    return plainToInstance(CourseDetailResDto, course);
+  }
+
+  async getCourseCurriculum(
+    courseId: string,
+  ): Promise<CourseDetailSectionResDto[]> {
+    const courseWithCurriculum = await this.db.query.courses.findFirst({
+      where: eq(courses.id, courseId),
+      with: {
+        courseSections: {
+          orderBy: [asc(courseSections.position), asc(courseSections.createdAt)],
+          with: {
+            lessons: {
+              orderBy: [asc(lessons.position), asc(lessons.createdAt)],
+              with: {
+                lessonParts: {
+                  orderBy: [
+                    asc(lessonParts.position),
+                    asc(lessonParts.createdAt),
+                  ],
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!courseWithCurriculum) {
       throw new AppException(
-        ErrorCode.E103,
-        'You do not have permission to view this course',
-        HttpStatus.FORBIDDEN,
+        ErrorCode.E105,
+        'Course not found',
+        HttpStatus.NOT_FOUND,
       );
     }
 
-    if (payload.role === Role.TEACHER && course.teacherId !== payload.userId) {
-      throw new AppException(
-        ErrorCode.E103,
-        'You do not have permission to manage this course',
-        HttpStatus.FORBIDDEN,
-      );
-    }
-
-    const [sectionRows, lessonRows, resourceRows] = await Promise.all([
-      this.db
-        .select({
-          id: courseSections.id,
-          courseId: courseSections.courseId,
-          title: courseSections.title,
-          description: courseSections.description,
-          position: courseSections.position,
-          createdAt: courseSections.createdAt,
-          updatedAt: courseSections.updatedAt,
-        })
-        .from(courseSections)
-        .where(eq(courseSections.courseId, courseId))
-        .orderBy(asc(courseSections.position), asc(courseSections.createdAt)),
-      this.db
-        .select({
-          id: courseLessons.id,
-          sectionId: courseLessons.sectionId,
-          title: courseLessons.title,
-          summary: courseLessons.summary,
-          content: courseLessons.content,
-          videoUrl: courseLessons.videoUrl,
-          lessonType: courseLessons.lessonType,
-          durationMinutes: courseLessons.durationMinutes,
-          position: courseLessons.position,
-          isPreview: courseLessons.isPreview,
-          isPublished: courseLessons.isPublished,
-          createdAt: courseLessons.createdAt,
-          updatedAt: courseLessons.updatedAt,
-        })
-        .from(courseLessons)
-        .innerJoin(
-          courseSections,
-          eq(courseLessons.sectionId, courseSections.id),
-        )
-        .where(eq(courseSections.courseId, courseId))
-        .orderBy(asc(courseLessons.position), asc(courseLessons.createdAt)),
-      this.db
-        .select({
-          id: courseResources.id,
-          lessonId: courseResources.lessonId,
-          title: courseResources.title,
-          resourceType: courseResources.resourceType,
-          resourceUrl: courseResources.resourceUrl,
-          createdAt: courseResources.createdAt,
-        })
-        .from(courseResources)
-        .innerJoin(
-          courseLessons,
-          eq(courseResources.lessonId, courseLessons.id),
-        )
-        .innerJoin(
-          courseSections,
-          eq(courseLessons.sectionId, courseSections.id),
-        )
-        .where(eq(courseSections.courseId, courseId))
-        .orderBy(asc(courseResources.createdAt)),
-    ]);
-
-    const resourcesByLesson = new Map<string, CourseResourceResDto[]>();
-
-    resourceRows.forEach((resource) => {
-      const items = resourcesByLesson.get(resource.lessonId) ?? [];
-      items.push(plainToInstance(CourseResourceResDto, resource));
-      resourcesByLesson.set(resource.lessonId, items);
-    });
-
-    const lessonsBySection = new Map<string, CourseLessonResDto[]>();
-
-    lessonRows.forEach((lesson) => {
-      const items = lessonsBySection.get(lesson.sectionId) ?? [];
-      items.push(
-        plainToInstance(CourseLessonResDto, {
-          ...lesson,
-          resources: resourcesByLesson.get(lesson.id) ?? [],
-        }),
-      );
-      lessonsBySection.set(lesson.sectionId, items);
-    });
-
-    return plainToInstance(CourseContentResDto, {
-      courseId: course.id,
-      title: course.title,
-      slug: course.slug,
-      description: course.description,
-      shortDescription: course.shortDescription,
-      thumbnailUrl: course.thumbnailUrl,
-      introVideoUrl: course.introVideoUrl,
-      teacherId: course.teacherId,
-      level: course.level,
-      price: course.price,
-      estimatedDurationMinutes: course.estimatedDurationMinutes,
-      tags: course.tags,
-      learningOutcomes: course.learningOutcomes,
-      isPublished: course.isPublished,
-      createdAt: course.createdAt,
-      updatedAt: course.updatedAt,
-      sections: sectionRows.map((section) =>
-        plainToInstance(CourseSectionResDto, {
-          ...section,
-          lessons: lessonsBySection.get(section.id) ?? [],
-        }),
-      ),
-    });
-  }
-
-  async createSection(
-    courseId: string,
-    dto: CreateCourseSectionReqDto,
-    payload: JwtPayloadType,
-  ): Promise<CourseSectionResDto> {
-    await this.ensureCourseManagePermission(courseId, payload);
-
-    const [section] = await this.db
-      .insert(courseSections)
-      .values({
-        courseId,
-        title: dto.title,
-        description: dto.description,
-        position: dto.position,
-      })
-      .returning({
-        id: courseSections.id,
-        courseId: courseSections.courseId,
-        title: courseSections.title,
-        description: courseSections.description,
-        position: courseSections.position,
-        createdAt: courseSections.createdAt,
-        updatedAt: courseSections.updatedAt,
-      });
-
-    return plainToInstance(CourseSectionResDto, {
-      ...section,
-      lessons: [],
-    });
-  }
-
-  async updateSection(
-    courseId: string,
-    sectionId: string,
-    dto: UpdateCourseSectionReqDto,
-    payload: JwtPayloadType,
-  ): Promise<CourseSectionResDto> {
-    await this.ensureCourseManagePermission(courseId, payload);
-    await this.ensureSectionBelongsToCourse(courseId, sectionId);
-
-    const [section] = await this.db
-      .update(courseSections)
-      .set({
-        title: dto.title,
-        description: dto.description,
-        position: dto.position,
-      })
-      .where(eq(courseSections.id, sectionId))
-      .returning({
-        id: courseSections.id,
-        courseId: courseSections.courseId,
-        title: courseSections.title,
-        description: courseSections.description,
-        position: courseSections.position,
-        createdAt: courseSections.createdAt,
-        updatedAt: courseSections.updatedAt,
-      });
-
-    return plainToInstance(CourseSectionResDto, {
-      ...section,
-      lessons: [],
-    });
-  }
-
-  async deleteSection(
-    courseId: string,
-    sectionId: string,
-    payload: JwtPayloadType,
-  ): Promise<void> {
-    await this.ensureCourseManagePermission(courseId, payload);
-    await this.ensureSectionBelongsToCourse(courseId, sectionId);
-
-    await this.db
-      .delete(courseSections)
-      .where(eq(courseSections.id, sectionId));
-  }
-
-  async createLesson(
-    courseId: string,
-    sectionId: string,
-    dto: CreateCourseLessonReqDto,
-    payload: JwtPayloadType,
-  ): Promise<CourseLessonResDto> {
-    await this.ensureCourseManagePermission(courseId, payload);
-    await this.ensureSectionBelongsToCourse(courseId, sectionId);
-
-    const [lesson] = await this.db
-      .insert(courseLessons)
-      .values({
-        sectionId,
-        title: dto.title,
-        summary: dto.summary,
-        content: dto.content,
-        videoUrl: dto.videoUrl,
-        lessonType: dto.lessonType,
-        durationMinutes: dto.durationMinutes,
-        position: dto.position,
-        isPreview: dto.isPreview,
-        isPublished: dto.isPublished,
-      })
-      .returning({
-        id: courseLessons.id,
-        sectionId: courseLessons.sectionId,
-        title: courseLessons.title,
-        summary: courseLessons.summary,
-        content: courseLessons.content,
-        videoUrl: courseLessons.videoUrl,
-        lessonType: courseLessons.lessonType,
-        durationMinutes: courseLessons.durationMinutes,
-        position: courseLessons.position,
-        isPreview: courseLessons.isPreview,
-        isPublished: courseLessons.isPublished,
-        createdAt: courseLessons.createdAt,
-        updatedAt: courseLessons.updatedAt,
-      });
-
-    return plainToInstance(CourseLessonResDto, {
-      ...lesson,
-      resources: [],
-    });
-  }
-
-  async updateLesson(
-    courseId: string,
-    sectionId: string,
-    lessonId: string,
-    dto: UpdateCourseLessonReqDto,
-    payload: JwtPayloadType,
-  ): Promise<CourseLessonResDto> {
-    await this.ensureCourseManagePermission(courseId, payload);
-    await this.ensureLessonBelongsToSection(courseId, sectionId, lessonId);
-
-    const [lesson] = await this.db
-      .update(courseLessons)
-      .set({
-        title: dto.title,
-        summary: dto.summary,
-        content: dto.content,
-        videoUrl: dto.videoUrl,
-        lessonType: dto.lessonType,
-        durationMinutes: dto.durationMinutes,
-        position: dto.position,
-        isPreview: dto.isPreview,
-        isPublished: dto.isPublished,
-      })
-      .where(eq(courseLessons.id, lessonId))
-      .returning({
-        id: courseLessons.id,
-        sectionId: courseLessons.sectionId,
-        title: courseLessons.title,
-        summary: courseLessons.summary,
-        content: courseLessons.content,
-        videoUrl: courseLessons.videoUrl,
-        lessonType: courseLessons.lessonType,
-        durationMinutes: courseLessons.durationMinutes,
-        position: courseLessons.position,
-        isPreview: courseLessons.isPreview,
-        isPublished: courseLessons.isPublished,
-        createdAt: courseLessons.createdAt,
-        updatedAt: courseLessons.updatedAt,
-      });
-
-    const resources = await this.db
-      .select({
-        id: courseResources.id,
-        lessonId: courseResources.lessonId,
-        title: courseResources.title,
-        resourceType: courseResources.resourceType,
-        resourceUrl: courseResources.resourceUrl,
-        createdAt: courseResources.createdAt,
-      })
-      .from(courseResources)
-      .where(eq(courseResources.lessonId, lessonId))
-      .orderBy(asc(courseResources.createdAt));
-
-    return plainToInstance(CourseLessonResDto, {
-      ...lesson,
-      resources: plainToInstance(CourseResourceResDto, resources),
-    });
-  }
-
-  async deleteLesson(
-    courseId: string,
-    sectionId: string,
-    lessonId: string,
-    payload: JwtPayloadType,
-  ): Promise<void> {
-    await this.ensureCourseManagePermission(courseId, payload);
-    await this.ensureLessonBelongsToSection(courseId, sectionId, lessonId);
-
-    await this.db.delete(courseLessons).where(eq(courseLessons.id, lessonId));
-  }
-
-  async createResource(
-    courseId: string,
-    sectionId: string,
-    lessonId: string,
-    dto: CreateCourseResourceReqDto,
-    payload: JwtPayloadType,
-  ): Promise<CourseResourceResDto> {
-    await this.ensureCourseManagePermission(courseId, payload);
-    await this.ensureLessonBelongsToSection(courseId, sectionId, lessonId);
-
-    const [resource] = await this.db
-      .insert(courseResources)
-      .values({
-        lessonId,
-        title: dto.title,
-        resourceType: dto.resourceType,
-        resourceUrl: dto.resourceUrl,
-      })
-      .returning({
-        id: courseResources.id,
-        lessonId: courseResources.lessonId,
-        title: courseResources.title,
-        resourceType: courseResources.resourceType,
-        resourceUrl: courseResources.resourceUrl,
-        createdAt: courseResources.createdAt,
-      });
-
-    return plainToInstance(CourseResourceResDto, resource);
-  }
-
-  async updateResource(
-    courseId: string,
-    sectionId: string,
-    lessonId: string,
-    resourceId: string,
-    dto: UpdateCourseResourceReqDto,
-    payload: JwtPayloadType,
-  ): Promise<CourseResourceResDto> {
-    await this.ensureCourseManagePermission(courseId, payload);
-    await this.ensureResourceBelongsToLesson(
-      courseId,
-      sectionId,
-      lessonId,
-      resourceId,
+    return plainToInstance(
+      CourseDetailSectionResDto,
+      courseWithCurriculum.courseSections,
     );
-
-    const [resource] = await this.db
-      .update(courseResources)
-      .set({
-        title: dto.title,
-        resourceType: dto.resourceType,
-        resourceUrl: dto.resourceUrl,
-      })
-      .where(eq(courseResources.id, resourceId))
-      .returning({
-        id: courseResources.id,
-        lessonId: courseResources.lessonId,
-        title: courseResources.title,
-        resourceType: courseResources.resourceType,
-        resourceUrl: courseResources.resourceUrl,
-        createdAt: courseResources.createdAt,
-      });
-
-    return plainToInstance(CourseResourceResDto, resource);
-  }
-
-  async deleteResource(
-    courseId: string,
-    sectionId: string,
-    lessonId: string,
-    resourceId: string,
-    payload: JwtPayloadType,
-  ): Promise<void> {
-    await this.ensureCourseManagePermission(courseId, payload);
-    await this.ensureResourceBelongsToLesson(
-      courseId,
-      sectionId,
-      lessonId,
-      resourceId,
-    );
-
-    await this.db
-      .delete(courseResources)
-      .where(eq(courseResources.id, resourceId));
   }
 
   private async generateUniqueSlug(name: string): Promise<string> {
@@ -691,128 +457,36 @@ export class CoursesService {
     return `${baseSlug}-${Date.now()}`;
   }
 
-  private async ensureCourseManagePermission(
-    courseId: string,
-    payload: JwtPayloadType,
-  ) {
-    const course = await this.db.query.courses.findFirst({
-      where: eq(courses.id, courseId),
-      columns: {
-        id: true,
-        teacherId: true,
-      },
-    });
-
-    if (!course) {
-      throw new AppException(
-        ErrorCode.E105,
-        'Course not found',
-        HttpStatus.NOT_FOUND,
-      );
-    }
-
-    if (payload.role === Role.ADMIN) {
-      return course;
-    }
-
-    if (payload.role === Role.TEACHER && course.teacherId === payload.userId) {
-      return course;
-    }
-
-    throw new AppException(
-      ErrorCode.E103,
-      'You do not have permission to manage this course',
-      HttpStatus.FORBIDDEN,
-    );
-  }
-
-  private async ensureSectionBelongsToCourse(
-    courseId: string,
-    sectionId: string,
-  ) {
-    const section = await this.db.query.courseSections.findFirst({
-      where: eq(courseSections.id, sectionId),
-      columns: {
-        id: true,
-        courseId: true,
-      },
-    });
-
-    if (!section || section.courseId !== courseId) {
-      throw new AppException(
-        ErrorCode.E105,
-        'Course section not found',
-        HttpStatus.NOT_FOUND,
-      );
-    }
-
-    return section;
-  }
-
-  private async ensureLessonBelongsToSection(
-    courseId: string,
-    sectionId: string,
-    lessonId: string,
-  ) {
-    await this.ensureSectionBelongsToCourse(courseId, sectionId);
-
-    const lesson = await this.db.query.courseLessons.findFirst({
-      where: eq(courseLessons.id, lessonId),
-      columns: {
-        id: true,
-        sectionId: true,
-      },
-    });
-
-    if (!lesson || lesson.sectionId !== sectionId) {
-      throw new AppException(
-        ErrorCode.E105,
-        'Course lesson not found',
-        HttpStatus.NOT_FOUND,
-      );
-    }
-
-    return lesson;
-  }
-
-  private async ensureResourceBelongsToLesson(
-    courseId: string,
-    sectionId: string,
-    lessonId: string,
-    resourceId: string,
-  ) {
-    await this.ensureLessonBelongsToSection(courseId, sectionId, lessonId);
-
-    const resource = await this.db.query.courseResources.findFirst({
-      where: eq(courseResources.id, resourceId),
-      columns: {
-        id: true,
-        lessonId: true,
-      },
-    });
-
-    if (!resource || resource.lessonId !== lessonId) {
-      throw new AppException(
-        ErrorCode.E105,
-        'Course resource not found',
-        HttpStatus.NOT_FOUND,
-      );
-    }
-
-    return resource;
-  }
-
-  private slugify(value: string): string {
-    const slug = value
+  private slugify(text: string): string {
+    return text
+      .toString()
+      .toLowerCase()
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
-      .replace(/đ/g, 'd')
-      .replace(/Đ/g, 'D')
-      .toLowerCase()
-      .trim()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '');
+      .replace(/\s+/g, '-')
+      .replace(/[^\w-]+/g, '')
+      .replace(/--+/g, '-')
+      .replace(/^-+/, '')
+      .replace(/-+$/, '');
+  }
 
-    return slug || `course-${randomBytes(3).toString('hex')}`;
+  private async uploadThumbnail(
+    thumbnail: Express.Multer.File,
+    slug: string,
+  ): Promise<string> {
+    console.log('thumbnail', thumbnail)
+    const uploadDir = join(process.cwd(), 'uploads');
+    const filename = this.buildFileName('course-thumb', slug, thumbnail.originalname);
+
+    await mkdir(uploadDir, { recursive: true });
+    await writeFile(join(uploadDir, filename), thumbnail.buffer);
+
+    return `/uploads/${filename}`;
+  }
+
+  private buildFileName(prefix: string, slug: string, originalName: string): string {
+    const random = randomBytes(4).toString('hex');
+    const ext = extname(originalName).toLowerCase();
+    return `${prefix}-${slug}-${random}${ext}`;
   }
 }

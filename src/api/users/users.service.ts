@@ -26,7 +26,6 @@ import { UserResDto } from './dto/user.res.dto';
 import { plainToInstance } from 'class-transformer';
 import { OrderBy } from '../../constants/app.constant';
 import { UserStatsResDto } from './dto/user-stats.res.dto';
-import { LockUserDto } from './dto/lock-user.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 
 @Injectable()
@@ -108,6 +107,12 @@ export class UsersService {
     return plainToInstance(UserResDto, user);
   }
 
+  /**
+   * Lấy thống kê tổng quan về người dùng.
+   * Bao gồm: tổng số người dùng, người dùng mới trong ngày, người dùng hoạt động (24h qua) và người dùng bị khóa.
+   *
+   * @returns Thống kê người dùng (tổng số, mới, hoạt động, bị khóa).
+   */
   async getStats(): Promise<UserStatsResDto> {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -143,11 +148,41 @@ export class UsersService {
     };
   }
 
-  async toggleLock(userId: string, lockUserDto: LockUserDto): Promise<void> {
+  /**
+   * Cập nhật trạng thái khóa/mở khóa của tài khoản người dùng.
+   *
+   * @param userId - ID của người dùng cần cập nhật.
+   * @param isLocked - Trạng thái khóa mới (true để khóa, false để mở khóa).
+   * @returns Promise<void>
+   */
+  async toggleLock(userId: string, isLocked: boolean): Promise<void> {
     await this.db
       .update(users)
-      .set({ isLocked: lockUserDto.isLocked })
+      .set({ isLocked })
       .where(eq(users.id, userId));
+  }
+
+  /**
+   * Xóa một người dùng khỏi hệ thống.
+   *
+   * @param userId - ID của người dùng cần xóa.
+   * @returns Promise<void>
+   * @throws {AppException} Nếu không tìm thấy người dùng (E002).
+   */
+  async delete(userId: string): Promise<void> {
+    const user = await this.db.query.users.findFirst({
+      where: eq(users.id, userId),
+    });
+
+    if (!user) {
+      throw new AppException(
+        ErrorCode.E002,
+        'User not found',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    await this.db.delete(users).where(eq(users.id, userId));
   }
 
   async create(dto: CreateUserDto): Promise<UserResDto> {

@@ -40,7 +40,7 @@ export class ClassesController {
   constructor(private readonly classesService: ClassesService) { }
 
   @Get()
-  @Roles(Role.ADMIN, Role.TEACHER, Role.USER)
+  @Roles(Role.ADMIN, Role.TEACHER, Role.STUDENT)
   @ApiAuth({
     type: ClassResDto,
     summary: 'Lấy danh sách lớp học',
@@ -90,7 +90,7 @@ export class ClassesController {
   }
 
   @Get(':classId')
-  @Roles(Role.ADMIN, Role.TEACHER, Role.USER)
+  @Roles(Role.ADMIN, Role.TEACHER, Role.STUDENT)
   @ApiAuth({
     type: ClassDetailResDto,
     summary: 'Lấy chi tiết lớp học',
@@ -103,7 +103,7 @@ export class ClassesController {
   }
 
   @Get(':classId/stats')
-  @Roles(Role.ADMIN, Role.TEACHER, Role.USER)
+  @Roles(Role.ADMIN, Role.TEACHER, Role.STUDENT)
   @ApiAuth({
     type: ClassDetailStatisticsResDto,
     summary: 'Lấy thống kê dashboard của lớp học',
@@ -142,7 +142,7 @@ export class ClassesController {
   }
 
   @Post('join/:inviteCode')
-  @Roles(Role.ADMIN, Role.TEACHER, Role.USER)
+  @Roles(Role.ADMIN, Role.TEACHER, Role.STUDENT)
   @ApiAuth({
     summary: 'Tham gia lớp học bằng mã mời',
   })
@@ -168,7 +168,7 @@ export class ClassesController {
   }
 
   @Get(':classId/courses')
-  @Roles(Role.ADMIN, Role.TEACHER, Role.USER)
+  @Roles(Role.ADMIN, Role.TEACHER, Role.STUDENT)
   @ApiAuth({
     type: CourseResDto,
     summary: 'Lay danh sach khoa hoc thuoc lop',
@@ -184,7 +184,7 @@ export class ClassesController {
   }
 
   @Get(':classId/course-ids')
-  @Roles(Role.ADMIN, Role.TEACHER, Role.USER)
+  @Roles(Role.ADMIN, Role.TEACHER, Role.STUDENT)
   @ApiAuth({
     type: String,
     isArray: true,
@@ -198,7 +198,7 @@ export class ClassesController {
   }
 
   @Get(':classId/students')
-  @Roles(Role.ADMIN, Role.TEACHER, Role.USER)
+  @Roles(Role.ADMIN, Role.TEACHER, Role.STUDENT)
   @ApiAuth({
     type: UserResDto,
     summary: 'Lấy danh sách học sinh trong lớp',

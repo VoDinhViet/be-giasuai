@@ -9,7 +9,7 @@ import {
 
 import { ResourceType } from './resource-type.enum';
 
-export class CourseResourceResDto {
+export class LessonResourceResDto {
   @UUIDField({ description: 'ID tai nguyen' })
   @Expose()
   id: string;

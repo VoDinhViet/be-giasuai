@@ -51,7 +51,7 @@ export class ClassesService {
   constructor(
     @Inject(DRIZZLE)
     private readonly db: Database,
-  ) { }
+  ) {}
 
   /**
    * Tạo một lớp học mới.
@@ -102,11 +102,10 @@ export class ClassesService {
   ): Promise<OffsetPaginatedDto<ClassResDto>> {
     const searchFilter = pageOptions.q
       ? or(
-        ilike(classes.name, `%${pageOptions.q}%`),
-        ilike(classes.code, `%${pageOptions.q}%`),
-      )
+          ilike(classes.name, `%${pageOptions.q}%`),
+          ilike(classes.code, `%${pageOptions.q}%`),
+        )
       : undefined;
-
 
     const filters = [searchFilter];
 
@@ -118,7 +117,7 @@ export class ClassesService {
       filters.push(eq(classes.teacherId, payload.userId));
     }
 
-    if (payload.role === Role.USER) {
+    if (payload.role === Role.STUDENT) {
       filters.push(
         sql`EXISTS (
             SELECT 1 FROM ${classEnrollments} 
@@ -243,7 +242,6 @@ export class ClassesService {
     classId: string,
     payload: JwtPayloadType,
   ): Promise<ClassDetailResDto> {
-
     const classItem = await this.db.query.classes.findFirst({
       where: eq(classes.id, classId),
       with: {
@@ -270,7 +268,10 @@ export class ClassesService {
       );
     }
 
-    if (payload.role === Role.USER && classItem.teacherId !== payload.userId) {
+    if (
+      payload.role === Role.STUDENT &&
+      classItem.teacherId !== payload.userId
+    ) {
       const enrollment = await this.db.query.classEnrollments.findFirst({
         where: and(
           eq(classEnrollments.classId, classId),
@@ -320,7 +321,6 @@ export class ClassesService {
     classId: string,
     payload: JwtPayloadType,
   ): Promise<ClassDetailStatisticsResDto> {
-
     const classItem = await this.db.query.classes.findFirst({
       where: eq(classes.id, classId),
     });
@@ -345,7 +345,10 @@ export class ClassesService {
       );
     }
 
-    if (payload.role === Role.USER && classItem.teacherId !== payload.userId) {
+    if (
+      payload.role === Role.STUDENT &&
+      classItem.teacherId !== payload.userId
+    ) {
       const enrollment = await this.db.query.classEnrollments.findFirst({
         where: and(
           eq(classEnrollments.classId, classId),
@@ -396,7 +399,6 @@ export class ClassesService {
     dto: UpdateClassReqDto,
     payload: JwtPayloadType,
   ): Promise<ClassResDto> {
-
     const classItem = await this.db.query.classes.findFirst({
       where: eq(classes.id, classId),
     });
@@ -411,7 +413,7 @@ export class ClassesService {
 
     // Authorization check
     if (
-      (payload.role === Role.TEACHER || payload.role === Role.USER) &&
+      (payload.role === Role.TEACHER || payload.role === Role.STUDENT) &&
       classItem.teacherId !== payload.userId
     ) {
       throw new AppException(
@@ -420,7 +422,6 @@ export class ClassesService {
         HttpStatus.FORBIDDEN,
       );
     }
-
 
     const [updatedClass] = await this.db
       .update(classes)
@@ -446,7 +447,6 @@ export class ClassesService {
   }
 
   async deleteClass(classId: string, payload: JwtPayloadType): Promise<void> {
-
     const classItem = await this.db.query.classes.findFirst({
       where: eq(classes.id, classId),
     });
@@ -461,7 +461,7 @@ export class ClassesService {
 
     // Authorization check: Only Admin or the assigned Teacher/Owner can delete
     if (
-      (payload.role === Role.TEACHER || payload.role === Role.USER) &&
+      (payload.role === Role.TEACHER || payload.role === Role.STUDENT) &&
       classItem.teacherId !== payload.userId
     ) {
       throw new AppException(
@@ -474,10 +474,7 @@ export class ClassesService {
     await this.db.delete(classes).where(eq(classes.id, classId));
   }
 
-  async joinClass(
-    inviteCode: string,
-    payload: JwtPayloadType,
-  ): Promise<void> {
+  async joinClass(inviteCode: string, payload: JwtPayloadType): Promise<void> {
     const classItem = await this.db.query.classes.findFirst({
       where: eq(classes.inviteCode, inviteCode),
       columns: { id: true, isActive: true },
@@ -533,7 +530,6 @@ export class ClassesService {
     pageOptions: PageOptionsDto,
     payload: JwtPayloadType,
   ): Promise<OffsetPaginatedDto<UserResDto>> {
-
     const classItem = await this.db.query.classes.findFirst({
       where: eq(classes.id, classId),
     });
@@ -547,7 +543,7 @@ export class ClassesService {
     }
 
     if (
-      (payload.role === Role.TEACHER || payload.role === Role.USER) &&
+      (payload.role === Role.TEACHER || payload.role === Role.STUDENT) &&
       classItem.teacherId !== payload.userId
     ) {
       throw new AppException(
@@ -620,13 +616,7 @@ export class ClassesService {
           title: courses.title,
           slug: courses.slug,
           description: courses.description,
-          shortDescription: courses.shortDescription,
           thumbnailUrl: courses.thumbnailUrl,
-          introVideoUrl: courses.introVideoUrl,
-          teacherId: courses.teacherId,
-          level: courses.level,
-          price: courses.price,
-          estimatedDurationMinutes: courses.estimatedDurationMinutes,
           tags: courses.tags,
           learningOutcomes: courses.learningOutcomes,
           isPublished: courses.isPublished,
@@ -645,7 +635,9 @@ export class ClassesService {
                   ilike(courses.description, `%${pageOptions.q}%`),
                 )
               : undefined,
-            payload.role === Role.USER ? eq(courses.isPublished, true) : undefined,
+            payload.role === Role.STUDENT
+              ? eq(courses.isPublished, true)
+              : undefined,
           ),
         )
         .orderBy(orderBy)
@@ -665,7 +657,9 @@ export class ClassesService {
                   ilike(courses.description, `%${pageOptions.q}%`),
                 )
               : undefined,
-            payload.role === Role.USER ? eq(courses.isPublished, true) : undefined,
+            payload.role === Role.STUDENT
+              ? eq(courses.isPublished, true)
+              : undefined,
           ),
         ),
     ]);
@@ -722,7 +716,6 @@ export class ClassesService {
       .onConflictDoNothing();
   }
 
-
   /**
    * Tạo mã ngẫu nhiên với tiền tố xác định.
    * Sử dụng crypto.randomBytes để đảm bảo tính ngẫu nhiên cao.
@@ -733,7 +726,6 @@ export class ClassesService {
   private generateCode(prefix: 'CLS' | 'INV'): string {
     return `${prefix}-${randomBytes(4).toString('hex').toUpperCase()}`;
   }
-
 
   /**
    * Xác thực quyền sở hữu của giáo viên đối với một lớp học.
@@ -820,11 +812,17 @@ export class ClassesService {
       return classItem;
     }
 
-    if (payload.role === Role.TEACHER && classItem.teacherId === payload.userId) {
+    if (
+      payload.role === Role.TEACHER &&
+      classItem.teacherId === payload.userId
+    ) {
       return classItem;
     }
 
-    if (payload.role === Role.USER && classItem.teacherId !== payload.userId) {
+    if (
+      payload.role === Role.STUDENT &&
+      classItem.teacherId !== payload.userId
+    ) {
       const enrollment = await this.db.query.classEnrollments.findFirst({
         where: and(
           eq(classEnrollments.classId, classId),
@@ -845,5 +843,4 @@ export class ClassesService {
       HttpStatus.FORBIDDEN,
     );
   }
-
 }

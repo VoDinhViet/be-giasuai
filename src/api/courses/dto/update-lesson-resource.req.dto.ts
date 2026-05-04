@@ -6,7 +6,7 @@ import {
 
 import { ResourceType } from './resource-type.enum';
 
-export class UpdateCourseResourceReqDto {
+export class UpdateLessonResourceReqDto {
   @StringFieldOptional({ description: 'Ten tai nguyen' })
   title?: string;
 

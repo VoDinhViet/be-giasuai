@@ -1,56 +1,28 @@
-import { Expose } from 'class-transformer';
-
-import {
-  BooleanField,
-  EnumField,
-  NumberField,
-  StringField,
-  StringFieldOptional,
-  UUIDField,
-} from '../../../decorators/field.decorators';
-
-import { LessonType } from './lesson-type.enum';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Expose, Type } from 'class-transformer';
+import { CourseDetailLessonPartResDto } from './course-detail-lesson-part.res.dto';
 
 export class CourseDetailLessonResDto {
-  @UUIDField({ description: 'ID bai hoc' })
-  @Expose()
+  @ApiProperty()
   id: string;
 
-  @UUIDField({ description: 'ID chuong hoc' })
-  @Expose()
-  sectionId: string;
-
-  @StringField({ description: 'Ten bai hoc' })
-  @Expose()
+  @ApiProperty()
   title: string;
 
-  @StringFieldOptional({ description: 'Tom tat bai hoc' })
-  @Expose()
-  summary?: string | null;
 
-  @EnumField(() => LessonType, { description: 'Loai bai hoc' })
-  @Expose()
-  lessonType: LessonType;
-
-  @NumberField({ description: 'Thoi luong bai hoc', int: true, min: 0 })
-  @Expose()
+  @ApiProperty()
   durationMinutes: number;
 
-  @NumberField({ description: 'Thu tu bai hoc', int: true, min: 1 })
+  @ApiProperty()
   @Expose()
   position: number;
 
-  @BooleanField({ description: 'Cho phep hoc thu' })
+  @ApiProperty()
   @Expose()
   isPreview: boolean;
 
-  @BooleanField({ description: 'Trang thai xuat ban' })
+  @ApiProperty({ type: () => CourseDetailLessonPartResDto, isArray: true })
+  @Type(() => CourseDetailLessonPartResDto)
   @Expose()
-  isPublished: boolean;
-
-  @Expose()
-  createdAt: Date;
-
-  @Expose()
-  updatedAt: Date;
+  lessonParts: CourseDetailLessonPartResDto[];
 }

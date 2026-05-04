@@ -21,7 +21,7 @@ export class CreateUserDto {
 
   @EnumField(() => Role, {
     description: 'Vai trò của người dùng',
-    default: Role.USER,
+    default: Role.STUDENT,
   })
   role: Role;
 }

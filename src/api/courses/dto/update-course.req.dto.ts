@@ -1,30 +1,29 @@
 import { Transform } from 'class-transformer';
 import {
-  StringField,
   StringFieldOptional,
   URLFieldOptional,
   UUIDFieldOptional,
 } from '../../../decorators/field.decorators';
 
-export class CreateCourseReqDto {
-  @StringField({ description: 'Ten khoa hoc' })
-  title: string;
+export class UpdateCourseReqDto {
+  @StringFieldOptional({ description: 'Tên khóa học' })
+  title?: string;
 
-  @StringFieldOptional({ description: 'Mo ta khoa hoc' })
+  @StringFieldOptional({ description: 'Mô tả khóa học' })
   description?: string;
 
-  @URLFieldOptional({ description: 'Anh dai dien khoa hoc' })
+  @URLFieldOptional({ description: 'Ảnh đại diện khóa học' })
   thumbnailUrl?: string;
 
   @StringFieldOptional({
-    description: 'Danh sach tag khoa hoc',
+    description: 'Danh sách tag khóa học',
     each: true,
   })
   @Transform(({ value }) => (typeof value === 'string' ? JSON.parse(value) : value))
   tags?: string[];
 
   @StringFieldOptional({
-    description: 'Danh sach muc tieu dau ra',
+    description: 'Danh sách mục tiêu đầu ra',
     each: true,
   })
   @Transform(({ value }) => (typeof value === 'string' ? JSON.parse(value) : value))
@@ -41,6 +40,4 @@ export class CreateCourseReqDto {
 
   @UUIDFieldOptional({ description: 'ID môn học' })
   subjectId?: string;
-
-
 }

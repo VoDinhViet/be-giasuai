@@ -1,6 +1,6 @@
 import { pgEnum, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 
-import { courseLessons } from './course-lessons';
+import { lessons } from './lessons';
 
 export const resourceTypeEnum = pgEnum('resource_type', [
   'FILE',
@@ -11,16 +11,16 @@ export const resourceTypeEnum = pgEnum('resource_type', [
   'DOCUMENT',
 ]);
 
-export const courseResources = pgTable('course_resources', {
+export const lessonResources = pgTable('lesson_resources', {
   id: uuid('id').defaultRandom().primaryKey(),
   lessonId: uuid('lesson_id')
     .notNull()
-    .references(() => courseLessons.id, { onDelete: 'cascade' }),
+    .references(() => lessons.id, { onDelete: 'cascade' }),
   title: text('title').notNull(),
   resourceType: resourceTypeEnum('resource_type').default('LINK').notNull(),
   resourceUrl: text('resource_url').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
-export type CourseResource = typeof courseResources.$inferSelect;
-export type NewCourseResource = typeof courseResources.$inferInsert;
+export type LessonResource = typeof lessonResources.$inferSelect;
+export type NewLessonResource = typeof lessonResources.$inferInsert;

@@ -4,21 +4,25 @@ import { classCourses } from './class-courses';
 import { classEnrollments } from './class-enrollments';
 import { users } from './users';
 import { sessions } from './sessions';
-import { courses } from './courses';
-import { courseSections } from './course-sections';
-import { courseLessons } from './course-lessons';
-import { courseResources } from './course-resources';
-import { courseEnrollments } from './course-enrollments';
-import { lessonProgress } from './lesson-progress';
+import { courses } from './courses/courses';
+import { courseSections } from './courses/course-sections';
+import { lessons } from './courses/lessons';
+import { lessonParts } from './courses/lesson-parts';
+import { lessonResources } from './courses/lesson-resources';
+import {
+  gradeSubjects,
+  grades,
+  majors,
+  majorSubjects,
+  schoolLevels,
+  subjects,
+} from './academic-catalog';
 
 export const usersRelations = relations(users, ({ many }) => ({
   sessions: many(sessions),
   assignedClassCourses: many(classCourses),
   classEnrollments: many(classEnrollments),
   teachingClasses: many(classes),
-  taughtCourses: many(courses),
-  courseEnrollments: many(courseEnrollments),
-  lessonProgress: many(lessonProgress),
 }));
 
 export const sessionsRelations = relations(sessions, ({ one }) => ({
@@ -64,13 +68,24 @@ export const classEnrollmentsRelations = relations(classEnrollments, ({ one }) =
 }));
 
 export const coursesRelations = relations(courses, ({ one, many }) => ({
-  teacher: one(users, {
-    fields: [courses.teacherId],
-    references: [users.id],
-  }),
   classes: many(classCourses),
-  sections: many(courseSections),
-  enrollments: many(courseEnrollments),
+  courseSections: many(courseSections),
+  schoolLevel: one(schoolLevels, {
+    fields: [courses.schoolLevelId],
+    references: [schoolLevels.id],
+  }),
+  grade: one(grades, {
+    fields: [courses.gradeId],
+    references: [grades.id],
+  }),
+  major: one(majors, {
+    fields: [courses.majorId],
+    references: [majors.id],
+  }),
+  subject: one(subjects, {
+    fields: [courses.subjectId],
+    references: [subjects.id],
+  }),
 }));
 
 export const courseSectionsRelations = relations(
@@ -80,53 +95,83 @@ export const courseSectionsRelations = relations(
       fields: [courseSections.courseId],
       references: [courses.id],
     }),
-    lessons: many(courseLessons),
+    lessons: many(lessons),
   }),
 );
 
-export const courseLessonsRelations = relations(
-  courseLessons,
+export const lessonsRelations = relations(
+  lessons,
   ({ one, many }) => ({
     section: one(courseSections, {
-      fields: [courseLessons.sectionId],
+      fields: [lessons.sectionId],
       references: [courseSections.id],
     }),
-    resources: many(courseResources),
-    progress: many(lessonProgress),
+    lessonParts: many(lessonParts),
+    resources: many(lessonResources),
   }),
 );
 
-export const courseResourcesRelations = relations(
-  courseResources,
+export const lessonPartsRelations = relations(lessonParts, ({ one }) => ({
+  lesson: one(lessons, {
+    fields: [lessonParts.lessonId],
+    references: [lessons.id],
+  }),
+}));
+
+export const lessonResourcesRelations = relations(
+  lessonResources,
   ({ one }) => ({
-    lesson: one(courseLessons, {
-      fields: [courseResources.lessonId],
-      references: [courseLessons.id],
+    lesson: one(lessons, {
+      fields: [lessonResources.lessonId],
+      references: [lessons.id],
     }),
   }),
 );
 
-export const courseEnrollmentsRelations = relations(
-  courseEnrollments,
-  ({ one }) => ({
-    course: one(courses, {
-      fields: [courseEnrollments.courseId],
-      references: [courses.id],
-    }),
-    student: one(users, {
-      fields: [courseEnrollments.studentId],
-      references: [users.id],
-    }),
-  }),
-);
+export const schoolLevelsRelations = relations(schoolLevels, ({ many }) => ({
+  grades: many(grades),
+  majors: many(majors),
+}));
 
-export const lessonProgressRelations = relations(lessonProgress, ({ one }) => ({
-  lesson: one(courseLessons, {
-    fields: [lessonProgress.lessonId],
-    references: [courseLessons.id],
+export const gradesRelations = relations(grades, ({ one, many }) => ({
+  schoolLevel: one(schoolLevels, {
+    fields: [grades.schoolLevelId],
+    references: [schoolLevels.id],
   }),
-  student: one(users, {
-    fields: [lessonProgress.studentId],
-    references: [users.id],
+  subjects: many(gradeSubjects),
+}));
+
+export const majorsRelations = relations(majors, ({ one, many }) => ({
+  schoolLevel: one(schoolLevels, {
+    fields: [majors.schoolLevelId],
+    references: [schoolLevels.id],
+  }),
+  subjects: many(majorSubjects),
+}));
+
+export const subjectsRelations = relations(subjects, ({ many }) => ({
+  grades: many(gradeSubjects),
+  majors: many(majorSubjects),
+}));
+
+export const gradeSubjectsRelations = relations(gradeSubjects, ({ one }) => ({
+  grade: one(grades, {
+    fields: [gradeSubjects.gradeId],
+    references: [grades.id],
+  }),
+  subject: one(subjects, {
+    fields: [gradeSubjects.subjectId],
+    references: [subjects.id],
+  }),
+}));
+
+export const majorSubjectsRelations = relations(majorSubjects, ({ one }) => ({
+  major: one(majors, {
+    fields: [majorSubjects.majorId],
+    references: [majors.id],
+  }),
+  subject: one(subjects, {
+    fields: [majorSubjects.subjectId],
+    references: [subjects.id],
   }),
 }));

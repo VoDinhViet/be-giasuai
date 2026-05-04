@@ -85,6 +85,69 @@
       "when": 1777010906518,
       "tag": "0011_chunky_amphibian",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1777270727203,
+      "tag": "0012_sudden_paper_doll",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1777356203640,
+      "tag": "0013_academic_catalog",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1777356527557,
+      "tag": "0014_academic_catalog_normalized",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1777449491162,
+      "tag": "0015_rename_course_lessons_to_lessons",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1777449747130,
+      "tag": "0016_lesson_parts",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1777449909061,
+      "tag": "0017_rename_course_resources_to_lesson_resources",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1777450188124,
+      "tag": "0018_lesson_simulation_file",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1777686884082,
+      "tag": "0019_tiresome_colleen_wing",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1777713845490,
+      "tag": "0020_happy_spyke",
+      "breakpoints": true
     }
   ]
 }

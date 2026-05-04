@@ -1,9 +1,9 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { Expose, Type } from 'class-transformer';
-
-import { CourseResDto } from './course.res.dto';
 import { CourseDetailSectionResDto } from './course-detail-section.res.dto';
 
-export class CourseDetailResDto extends CourseResDto {
+export class CourseCurriculumResDto {
+  @ApiProperty({ type: () => CourseDetailSectionResDto, isArray: true })
   @Type(() => CourseDetailSectionResDto)
   @Expose()
   courseSections: CourseDetailSectionResDto[];
