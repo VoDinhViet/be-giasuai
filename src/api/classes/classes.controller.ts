@@ -26,10 +26,8 @@ import { CreateClassReqDto } from './dto/create-class.req.dto';
 import { GetClassesReqDto } from './dto/get-classes.req.dto';
 import { UpdateClassReqDto } from './dto/update-class.req.dto';
 import { JoinClassReqDto } from './dto/join-class.req.dto';
-import { ClassStatisticsResDto } from './dto/class-statistics.res.dto';
 import { ClassDetailStatisticsResDto } from './dto/class-detail-statistics.res.dto';
 import { CourseResDto } from '../courses/dto/course.res.dto';
-import { UserResDto } from '../users/dto/user.res.dto';
 
 @ApiTags('classes')
 @Controller({
@@ -37,7 +35,7 @@ import { UserResDto } from '../users/dto/user.res.dto';
   version: '1',
 })
 export class ClassesController {
-  constructor(private readonly classesService: ClassesService) { }
+  constructor(private readonly classesService: ClassesService) {}
 
   @Get()
   @Roles(Role.ADMIN, Role.TEACHER, Role.STUDENT)
@@ -54,20 +52,7 @@ export class ClassesController {
     return this.classesService.getClasses(pageOptions, payload);
   }
 
-  @Get('statistics')
-  @Roles(Role.ADMIN, Role.TEACHER)
-  @ApiAuth({
-    type: ClassStatisticsResDto,
-    summary: 'Lấy thống kê lớp học',
-  })
-  getStatistics(
-    @User() payload: JwtPayloadType,
-  ): Promise<ClassStatisticsResDto> {
-    return this.classesService.getStatistics(payload);
-  }
-
   @Post()
-  @Roles(Role.TEACHER)
   @ApiAuth({
     type: ClassResDto,
     summary: 'Tạo lớp học',
@@ -183,6 +168,24 @@ export class ClassesController {
     return this.classesService.getCoursesByClass(classId, pageOptions, payload);
   }
 
+  @Post(':classId/students/:studentId')
+  @Roles(Role.ADMIN, Role.TEACHER, Role.STUDENT)
+  @ApiAuth({
+    summary: 'Thêm học viên vào lớp học',
+    statusCode: 201,
+  })
+  assignStudentToClass(
+    @UUIDParam('classId') classId: string,
+    @UUIDParam('studentId') studentId: string,
+    @User() payload: JwtPayloadType,
+  ): Promise<void> {
+    return this.classesService.assignStudentToClass(
+      classId,
+      studentId,
+      payload,
+    );
+  }
+
   @Get(':classId/course-ids')
   @Roles(Role.ADMIN, Role.TEACHER, Role.STUDENT)
   @ApiAuth({
@@ -195,21 +198,5 @@ export class ClassesController {
     @User() payload: JwtPayloadType,
   ): Promise<string[]> {
     return this.classesService.getAssignedCourseIds(classId, payload);
-  }
-
-  @Get(':classId/students')
-  @Roles(Role.ADMIN, Role.TEACHER, Role.STUDENT)
-  @ApiAuth({
-    type: UserResDto,
-    summary: 'Lấy danh sách học sinh trong lớp',
-    isPaginated: true,
-    paginationType: 'offset',
-  })
-  getStudents(
-    @UUIDParam('classId') classId: string,
-    @Query() pageOptions: PageOptionsDto,
-    @User() payload: JwtPayloadType,
-  ): Promise<OffsetPaginatedDto<UserResDto>> {
-    return this.classesService.getStudents(classId, pageOptions, payload);
   }
 }

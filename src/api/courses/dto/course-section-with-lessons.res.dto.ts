@@ -7,20 +7,20 @@ import {
   UUIDField,
 } from '../../../decorators/field.decorators';
 
-import { CourseDetailLessonResDto } from './course-detail-lesson.res.dto';
+import { CourseSectionLessonResDto } from './course-section-lesson.res.dto';
 
-export class CourseDetailSectionResDto {
+export class CourseSectionWithLessonsResDto {
   @UUIDField({ description: 'ID chuong hoc' })
   @Expose()
-  id: string;
+  id!: string;
 
   @UUIDField({ description: 'ID khoa hoc' })
   @Expose()
-  courseId: string;
+  courseId!: string;
 
   @StringField({ description: 'Ten chuong hoc' })
   @Expose()
-  title: string;
+  title!: string;
 
   @StringFieldOptional({ description: 'Mo ta chuong hoc' })
   @Expose()
@@ -28,15 +28,15 @@ export class CourseDetailSectionResDto {
 
   @NumberField({ description: 'Thu tu chuong hoc', int: true, min: 1 })
   @Expose()
-  position: number;
+  position!: number;
 
-  @Type(() => CourseDetailLessonResDto)
+  @Type(() => CourseSectionLessonResDto)
   @Expose()
-  lessons: CourseDetailLessonResDto[];
-
-  @Expose()
-  createdAt: Date;
+  lessons!: CourseSectionLessonResDto[];
 
   @Expose()
-  updatedAt: Date;
+  createdAt!: Date;
+
+  @Expose()
+  updatedAt!: Date;
 }

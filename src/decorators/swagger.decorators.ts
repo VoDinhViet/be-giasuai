@@ -48,6 +48,6 @@ export const ApiPaginatedResponse = <T extends Type<any>>(options: {
           },
         ],
       },
-    } as ApiResponseOptions | undefined),
+    }),
   );
 };

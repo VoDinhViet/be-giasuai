@@ -2,18 +2,7 @@ import { randomBytes } from 'crypto';
 
 import { Inject, Injectable, HttpStatus } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
-import {
-  and,
-  asc,
-  count,
-  countDistinct,
-  desc,
-  eq,
-  ilike,
-  or,
-  sql,
-  SQL,
-} from 'drizzle-orm';
+import { and, asc, count, desc, eq, ilike, or, sql } from 'drizzle-orm';
 
 import { JwtPayloadType } from '../../api/auth/types/jwt-payload.type';
 import { PageOptionsDto } from '../../common/offset-pagination/page-options.dto';
@@ -26,7 +15,7 @@ import { DRIZZLE } from '../../database/database.module';
 import type { Database } from '../../database/database.type';
 import {
   classCourses,
-  classEnrollments,
+  classRegistrations,
   classes,
   courses,
   users,
@@ -39,7 +28,6 @@ import { CreateClassReqDto } from './dto/create-class.req.dto';
 import { GetClassesReqDto } from './dto/get-classes.req.dto';
 import { UpdateClassReqDto } from './dto/update-class.req.dto';
 import { JoinClassReqDto } from './dto/join-class.req.dto';
-import { ClassStatisticsResDto } from './dto/class-statistics.res.dto';
 import { ClassDetailStatisticsResDto } from './dto/class-detail-statistics.res.dto';
 import { CourseResDto } from '../courses/dto/course.res.dto';
 import { UserResDto } from '../users/dto/user.res.dto';
@@ -120,10 +108,10 @@ export class ClassesService {
     if (payload.role === Role.STUDENT) {
       filters.push(
         sql`EXISTS (
-            SELECT 1 FROM ${classEnrollments} 
-            WHERE ${classEnrollments.classId} = ${classes.id} 
-            AND ${classEnrollments.studentId} = ${payload.userId}
-            AND ${classEnrollments.status} = 'active'
+            SELECT 1 FROM ${classRegistrations} 
+            WHERE ${classRegistrations.classId} = ${classes.id} 
+            AND ${classRegistrations.userId} = ${payload.userId}
+            AND ${classRegistrations.status} = 'active'
           )`,
       );
     }
@@ -175,45 +163,6 @@ export class ClassesService {
       plainToInstance(ClassResDto, data),
       new OffsetPaginationDto(total, pageOptions),
     );
-  }
-
-  async getStatistics(payload: JwtPayloadType): Promise<ClassStatisticsResDto> {
-    let roleFilter: SQL | undefined;
-
-    switch (payload.role) {
-      case Role.TEACHER:
-        roleFilter = eq(classes.teacherId, payload.userId);
-        break;
-      case Role.ADMIN:
-      default:
-        roleFilter = undefined;
-        break;
-    }
-
-    const where = roleFilter;
-    const [stats] = await this.db
-      .select({
-        totalClasses: countDistinct(classes.id),
-        activeClasses: sql<number>`count(distinct case when ${classes.isActive} = true then ${classes.id} end)`,
-        pausedClasses: sql<number>`count(distinct case when ${classes.isActive} = false then ${classes.id} end)`,
-        totalStudents: count(classEnrollments.studentId),
-      })
-      .from(classes)
-      .leftJoin(
-        classEnrollments,
-        and(
-          eq(classes.id, classEnrollments.classId),
-          eq(classEnrollments.status, 'active'),
-        ),
-      )
-      .where(where);
-
-    return plainToInstance(ClassStatisticsResDto, {
-      totalClasses: Number(stats?.totalClasses || 0),
-      activeClasses: Number(stats?.activeClasses || 0),
-      pausedClasses: Number(stats?.pausedClasses || 0),
-      totalStudents: Number(stats?.totalStudents || 0),
-    });
   }
 
   async getClassByCode(code: string): Promise<ClassResDto> {
@@ -272,11 +221,11 @@ export class ClassesService {
       payload.role === Role.STUDENT &&
       classItem.teacherId !== payload.userId
     ) {
-      const enrollment = await this.db.query.classEnrollments.findFirst({
+      const enrollment = await this.db.query.classRegistrations.findFirst({
         where: and(
-          eq(classEnrollments.classId, classId),
-          eq(classEnrollments.studentId, payload.userId),
-          eq(classEnrollments.status, 'active'),
+          eq(classRegistrations.classId, classId),
+          eq(classRegistrations.userId, payload.userId),
+          eq(classRegistrations.status, 'active'),
         ),
       });
 
@@ -299,12 +248,12 @@ export class ClassesService {
         isLocked: users.isLocked,
         createdAt: users.createdAt,
       })
-      .from(classEnrollments)
-      .innerJoin(users, eq(classEnrollments.studentId, users.id))
+      .from(classRegistrations)
+      .innerJoin(users, eq(classRegistrations.userId, users.id))
       .where(
         and(
-          eq(classEnrollments.classId, classId),
-          eq(classEnrollments.status, 'active'),
+          eq(classRegistrations.classId, classId),
+          eq(classRegistrations.status, 'active'),
         ),
       )
       .orderBy(asc(users.fullName), asc(users.createdAt));
@@ -349,11 +298,11 @@ export class ClassesService {
       payload.role === Role.STUDENT &&
       classItem.teacherId !== payload.userId
     ) {
-      const enrollment = await this.db.query.classEnrollments.findFirst({
+      const enrollment = await this.db.query.classRegistrations.findFirst({
         where: and(
-          eq(classEnrollments.classId, classId),
-          eq(classEnrollments.studentId, payload.userId),
-          eq(classEnrollments.status, 'active'),
+          eq(classRegistrations.classId, classId),
+          eq(classRegistrations.userId, payload.userId),
+          eq(classRegistrations.status, 'active'),
         ),
       });
 
@@ -369,13 +318,13 @@ export class ClassesService {
     const [stats, courseStats] = await Promise.all([
       this.db
         .select({
-          studentCount: count(classEnrollments.studentId),
+          studentCount: count(classRegistrations.userId),
         })
-        .from(classEnrollments)
+        .from(classRegistrations)
         .where(
           and(
-            eq(classEnrollments.classId, classId),
-            eq(classEnrollments.status, 'active'),
+            eq(classRegistrations.classId, classId),
+            eq(classRegistrations.status, 'active'),
           ),
         ),
       this.db
@@ -497,104 +446,32 @@ export class ClassesService {
     }
 
     // Check if already joined
-    const existing = await this.db.query.classEnrollments.findFirst({
+    const existing = await this.db.query.classRegistrations.findFirst({
       where: and(
-        eq(classEnrollments.classId, classItem.id),
-        eq(classEnrollments.studentId, payload.userId),
+        eq(classRegistrations.classId, classItem.id),
+        eq(classRegistrations.userId, payload.userId),
       ),
     });
 
     if (existing) {
       if (existing.status !== 'active') {
         await this.db
-          .update(classEnrollments)
+          .update(classRegistrations)
           .set({
             status: 'active',
-            enrolledAt: new Date(),
+            registeredAt: new Date(),
           })
-          .where(eq(classEnrollments.id, existing.id));
+          .where(eq(classRegistrations.id, existing.id));
       }
 
       return;
     }
 
-    await this.db.insert(classEnrollments).values({
+    await this.db.insert(classRegistrations).values({
       classId: classItem.id,
-      studentId: payload.userId,
+      userId: payload.userId,
       status: 'active',
     });
-  }
-
-  async getStudents(
-    classId: string,
-    pageOptions: PageOptionsDto,
-    payload: JwtPayloadType,
-  ): Promise<OffsetPaginatedDto<UserResDto>> {
-    const classItem = await this.db.query.classes.findFirst({
-      where: eq(classes.id, classId),
-    });
-
-    if (!classItem) {
-      throw new AppException(
-        ErrorCode.E105,
-        'Class not found',
-        HttpStatus.NOT_FOUND,
-      );
-    }
-
-    if (
-      (payload.role === Role.TEACHER || payload.role === Role.STUDENT) &&
-      classItem.teacherId !== payload.userId
-    ) {
-      throw new AppException(
-        ErrorCode.E103,
-        'You do not have permission to view students of this class',
-        HttpStatus.FORBIDDEN,
-      );
-    }
-
-    const orderBy =
-      pageOptions.order === OrderBy.ASC
-        ? asc(users.createdAt)
-        : desc(users.createdAt);
-
-    const [students, [{ total }]] = await Promise.all([
-      this.db
-        .select({
-          userId: users.id,
-          email: users.email,
-          username: users.username,
-          fullName: users.fullName,
-          role: users.role,
-          isLocked: users.isLocked,
-          createdAt: users.createdAt,
-        })
-        .from(classEnrollments)
-        .innerJoin(users, eq(classEnrollments.studentId, users.id))
-        .where(
-          and(
-            eq(classEnrollments.classId, classId),
-            eq(classEnrollments.status, 'active'),
-          ),
-        )
-        .orderBy(orderBy)
-        .limit(pageOptions.limit)
-        .offset(pageOptions.offset),
-      this.db
-        .select({ total: count() })
-        .from(classEnrollments)
-        .where(
-          and(
-            eq(classEnrollments.classId, classId),
-            eq(classEnrollments.status, 'active'),
-          ),
-        ),
-    ]);
-
-    return new OffsetPaginatedDto(
-      plainToInstance(UserResDto, students),
-      new OffsetPaginationDto(total, pageOptions),
-    );
   }
 
   async getCoursesByClass(
@@ -717,6 +594,61 @@ export class ClassesService {
   }
 
   /**
+   * Gán một học viên vào một lớp học cụ thể.
+   *
+   * Điều kiện ràng buộc:
+   * - Chỉ giáo viên sở hữu lớp (teacherId) mới được phép thực hiện hành động này.
+   *
+   * @param classId - ID của lớp học.
+   * @param studentId - ID của học viên cần gán.
+   * @param payload - Thông tin payload của JWT.
+   */
+  async assignStudentToClass(
+    classId: string,
+    studentId: string,
+    payload: JwtPayloadType,
+  ): Promise<void> {
+    const student = await this.db.query.users.findFirst({
+      where: eq(users.id, studentId),
+      columns: { id: true },
+    });
+
+    if (!student) {
+      throw new AppException(
+        ErrorCode.E105,
+        'Student not found',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    const existing = await this.db.query.classRegistrations.findFirst({
+      where: and(
+        eq(classRegistrations.classId, classId),
+        eq(classRegistrations.userId, studentId),
+      ),
+    });
+
+    if (existing) {
+      if (existing.status !== 'active') {
+        await this.db
+          .update(classRegistrations)
+          .set({
+            status: 'active',
+            registeredAt: new Date(),
+          })
+          .where(eq(classRegistrations.id, existing.id));
+      }
+      return;
+    }
+
+    await this.db.insert(classRegistrations).values({
+      classId,
+      userId: studentId,
+      status: 'active',
+    });
+  }
+
+  /**
    * Tạo mã ngẫu nhiên với tiền tố xác định.
    * Sử dụng crypto.randomBytes để đảm bảo tính ngẫu nhiên cao.
    *
@@ -823,11 +755,11 @@ export class ClassesService {
       payload.role === Role.STUDENT &&
       classItem.teacherId !== payload.userId
     ) {
-      const enrollment = await this.db.query.classEnrollments.findFirst({
+      const enrollment = await this.db.query.classRegistrations.findFirst({
         where: and(
-          eq(classEnrollments.classId, classId),
-          eq(classEnrollments.studentId, payload.userId),
-          eq(classEnrollments.status, 'active'),
+          eq(classRegistrations.classId, classId),
+          eq(classRegistrations.userId, payload.userId),
+          eq(classRegistrations.status, 'active'),
         ),
         columns: { id: true },
       });

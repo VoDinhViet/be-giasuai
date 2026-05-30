@@ -1,4 +1,7 @@
+import { relations } from 'drizzle-orm';
 import { boolean, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { classCourses } from './class-courses';
+import { classRegistrations } from './class-registrations';
 import { users } from './users';
 
 export const classes = pgTable('classes', {
@@ -17,6 +20,15 @@ export const classes = pgTable('classes', {
     .$onUpdateFn(() => new Date())
     .notNull(),
 });
+
+export const classesRelations = relations(classes, ({ one, many }) => ({
+  teacher: one(users, {
+    fields: [classes.teacherId],
+    references: [users.id],
+  }),
+  courses: many(classCourses),
+  registrations: many(classRegistrations),
+}));
 
 export type Class = typeof classes.$inferSelect;
 export type NewClass = typeof classes.$inferInsert;

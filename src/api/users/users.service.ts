@@ -6,6 +6,7 @@ import { DRIZZLE } from '../../database/database.module';
 import type { Database } from '../../database/database.type';
 import { users } from '../../database/schemas/users';
 import { sessions } from '../../database/schemas/sessions';
+import { classRegistrations } from '../../database/schemas/class-registrations';
 import {
   and,
   asc,
@@ -14,6 +15,7 @@ import {
   eq,
   gte,
   ilike,
+  inArray,
   or,
   sql,
   type SQL,
@@ -55,6 +57,23 @@ export class UsersService {
 
     if (pageOptions.isLocked !== undefined) {
       conditions.push(eq(users.isLocked, pageOptions.isLocked));
+    }
+
+    if (pageOptions.classId) {
+      conditions.push(
+        inArray(
+          users.id,
+          this.db
+            .select({ userId: classRegistrations.userId })
+            .from(classRegistrations)
+            .where(
+              and(
+                eq(classRegistrations.classId, pageOptions.classId),
+                eq(classRegistrations.status, 'active'),
+              ),
+            ),
+        ),
+      );
     }
 
     const where = conditions.length > 0 ? and(...conditions) : undefined;
@@ -131,7 +150,7 @@ export class UsersService {
           .select({ activeUsers: count(sql`DISTINCT ${sessions.userId}`) })
           .from(sessions)
           .where(gte(sessions.updatedAt, last24h)),
-      this.db
+        this.db
           .select({ lockedUsers: count() })
           .from(users)
           .where(eq(users.isLocked, true)),
@@ -156,10 +175,7 @@ export class UsersService {
    * @returns Promise<void>
    */
   async toggleLock(userId: string, isLocked: boolean): Promise<void> {
-    await this.db
-      .update(users)
-      .set({ isLocked })
-      .where(eq(users.id, userId));
+    await this.db.update(users).set({ isLocked }).where(eq(users.id, userId));
   }
 
   /**

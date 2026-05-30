@@ -1,3 +1,4 @@
+import { relations } from 'drizzle-orm';
 import {
   boolean,
   integer,
@@ -28,27 +29,27 @@ export const categoryTypeEnum = pgEnum('category_type', [
  */
 export const categories = pgTable('categories', {
   id: uuid('id').defaultRandom().primaryKey(),
-  
+
   // Liên kết với danh mục cha (Ví dụ: Khối lớp thuộc về Cấp học)
   parentId: uuid('parent_id').references((): any => categories.id, {
     onDelete: 'cascade',
   }),
-  
+
   // Loại danh mục
   type: categoryTypeEnum('type').notNull(),
-  
+
   // Mã danh mục (Ví dụ: PRIMARY, GRADE_1, MATH)
   code: text('code').notNull().unique(),
-  
+
   // Tên hiển thị
   name: text('name').notNull(),
-  
+
   // Mô tả ngắn
   description: text('description'),
-  
+
   // Thứ tự hiển thị
   sortOrder: integer('sort_order').default(0).notNull(),
-  
+
   isActive: boolean('is_active').default(true).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at')
@@ -56,6 +57,17 @@ export const categories = pgTable('categories', {
     .$onUpdateFn(() => new Date())
     .notNull(),
 });
+
+export const categoriesRelations = relations(categories, ({ many, one }) => ({
+  parent: one(categories, {
+    fields: [categories.parentId],
+    references: [categories.id],
+    relationName: 'category_parent',
+  }),
+  children: many(categories, {
+    relationName: 'category_parent',
+  }),
+}));
 
 export type Category = typeof categories.$inferSelect;
 export type NewCategory = typeof categories.$inferInsert;

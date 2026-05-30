@@ -22,7 +22,6 @@ export const DRIZZLE = 'DRIZZLE';
         });
 
         const queryClient = postgres(databaseUrl, {
-          ssl: 'verify-full',
           max,
         });
         return drizzle(queryClient, { schema });

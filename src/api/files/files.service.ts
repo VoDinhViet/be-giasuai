@@ -17,9 +17,11 @@ export class FilesService {
       );
     }
 
-    const backendDomain = this.configService.get('app.backendDomain', { infer: true });
+    const backendDomain = this.configService.get('app.backendDomain', {
+      infer: true,
+    });
     const port = this.configService.get('app.port', { infer: true });
-    
+
     // Construct the file URL
     // Assuming static files are served at /uploads
     const fileUrl = `${backendDomain}:${port}/uploads/${file.filename}`;

@@ -40,7 +40,7 @@ export class AuthService {
     @Inject(DRIZZLE)
     private readonly db: Database,
     private readonly jwtService: JwtService,
-  ) { }
+  ) {}
 
   private async createToken(data: {
     id: Uuid;

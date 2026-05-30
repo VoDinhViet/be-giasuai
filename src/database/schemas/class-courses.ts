@@ -1,3 +1,4 @@
+import { relations } from 'drizzle-orm';
 import { pgTable, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
 
 import { classes } from './classes';
@@ -26,6 +27,21 @@ export const classCourses = pgTable(
     ),
   }),
 );
+
+export const classCoursesRelations = relations(classCourses, ({ one }) => ({
+  class: one(classes, {
+    fields: [classCourses.classId],
+    references: [classes.id],
+  }),
+  course: one(courses, {
+    fields: [classCourses.courseId],
+    references: [courses.id],
+  }),
+  assignedByUser: one(users, {
+    fields: [classCourses.assignedBy],
+    references: [users.id],
+  }),
+}));
 
 export type ClassCourse = typeof classCourses.$inferSelect;
 export type NewClassCourse = typeof classCourses.$inferInsert;

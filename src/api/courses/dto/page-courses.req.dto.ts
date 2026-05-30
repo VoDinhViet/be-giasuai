@@ -5,12 +5,11 @@ import {
   EnumFieldOptional,
 } from '../../../decorators/field.decorators';
 
-export class GetCoursesReqDto extends PageOptionsDto {
+export class PageCoursesReqDto extends PageOptionsDto {
   @BooleanFieldOptional({
     description: 'Loc theo trang thai xuat ban',
   })
   readonly isPublished?: boolean;
-
 
   @EnumFieldOptional(() => OrderBy, {
     description: 'Sap xep theo thoi gian tao: DESC moi nhat, ASC cu nhat',

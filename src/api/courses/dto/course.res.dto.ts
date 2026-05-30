@@ -6,21 +6,20 @@ import {
   StringFieldOptional,
   URLFieldOptional,
   UUIDField,
-  UUIDFieldOptional,
 } from '../../../decorators/field.decorators';
 
 export class CourseResDto {
   @UUIDField({ description: 'ID khoa hoc' })
   @Expose()
-  id: string;
+  id!: string;
 
   @StringField({ description: 'Ten khoa hoc' })
   @Expose()
-  title: string;
+  title!: string;
 
   @StringField({ description: 'Slug khoa hoc' })
   @Expose()
-  slug: string;
+  slug!: string;
 
   @StringFieldOptional({ description: 'Mo ta khoa hoc' })
   @Expose()
@@ -33,38 +32,22 @@ export class CourseResDto {
 
   @StringFieldOptional({ description: 'Danh sach tag khoa hoc', each: true })
   @Expose()
-  tags: string[];
+  tags!: string[];
 
   @StringFieldOptional({
     description: 'Danh sach muc tieu dau ra',
     each: true,
   })
   @Expose()
-  learningOutcomes: string[];
+  learningOutcomes!: string[];
 
   @BooleanField({ description: 'Trang thai xuat ban' })
   @Expose()
-  isPublished: boolean;
-
-  @UUIDFieldOptional({ description: 'ID cấp học' })
-  @Expose()
-  levelId?: string | null;
-
-  @UUIDFieldOptional({ description: 'ID khối lớp' })
-  @Expose()
-  gradeId?: string | null;
-
-  @UUIDFieldOptional({ description: 'ID chuyên ngành/khối' })
-  @Expose()
-  majorId?: string | null;
-
-  @UUIDFieldOptional({ description: 'ID môn học' })
-  @Expose()
-  subjectId?: string | null;
+  isPublished!: boolean;
 
   @Expose()
-  createdAt: Date;
+  createdAt!: Date;
 
   @Expose()
-  updatedAt: Date;
+  updatedAt!: Date;
 }

@@ -17,7 +17,6 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { ValidationError } from 'class-validator';
 import { join } from 'path';
 import compression from 'compression';
-import type { Express, Request, Response } from 'express';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
 import { AuthGuard } from './guards/auth.guard';
@@ -27,9 +26,7 @@ import { Environment } from './constants/app.constant';
 import { AllConfigType } from './config/config.type';
 import { setupSwagger } from './utils/swagger.util';
 
-let cachedServer: Express | null = null;
-
-export async function bootstrap(): Promise<Express> {
+async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   app.set('trust proxy', 1);
@@ -83,30 +80,17 @@ export async function bootstrap(): Promise<Express> {
     setupSwagger(app);
   }
 
-  await app.init();
-  return app.getHttpAdapter().getInstance();
+  const port = configService.get('app.port', { infer: true }) || process.env.PORT || 3000;
+  await app.listen(port);
+  
+  Logger.log(
+    `Application is running on: http://localhost:${port}/api`,
+    'Bootstrap',
+  );
+  Logger.log(
+    `Swagger is running on: http://localhost:${port}/api-docs`,
+    'Bootstrap',
+  );
 }
 
-async function getServer(): Promise<Express> {
-  if (!cachedServer) {
-    cachedServer = await bootstrap();
-  }
-
-  return cachedServer;
-}
-
-export default async function handler(req: Request, res: Response) {
-  const server = await getServer();
-  return server(req, res);
-}
-
-if (require.main === module) {
-  getServer().then((instance) => {
-    const port = process.env.PORT || 3000;
-    instance.listen(port);
-    Logger.log(
-      `Application is running on: http://localhost:${port}/api`,
-      'Bootstrap',
-    );
-  });
-}
+bootstrap();

@@ -7,6 +7,5 @@ export * from './courses/lesson-parts';
 export * from './courses/lesson-resources';
 export * from './classes';
 export * from './class-courses';
-export * from './class-enrollments';
+export * from './class-registrations';
 export * from './categories';
-export * from './relation';
