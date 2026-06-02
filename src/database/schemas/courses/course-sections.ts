@@ -2,7 +2,7 @@ import { relations } from 'drizzle-orm';
 import { integer, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 
 import { courses } from './courses';
-import { lessons } from './lessons';
+import { courseLessons } from './course-lessons';
 
 /**
  * Bảng chương học (Course Sections)
@@ -39,7 +39,7 @@ export const courseSectionsRelations = relations(
       fields: [courseSections.courseId],
       references: [courses.id],
     }),
-    lessons: many(lessons),
+    lessons: many(courseLessons),
   }),
 );
 

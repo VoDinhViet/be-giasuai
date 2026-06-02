@@ -2,7 +2,6 @@ import { relations } from 'drizzle-orm';
 import {
   boolean,
   integer,
-  pgEnum,
   pgTable,
   text,
   timestamp,
@@ -10,14 +9,13 @@ import {
 } from 'drizzle-orm/pg-core';
 
 import { courseSections } from './course-sections';
-import { lessonParts } from './lesson-parts';
-import { lessonResources } from './lesson-resources';
+import { courseLessonParts } from './course-lesson-parts';
 
 /**
- * Bảng bài học (Lessons)
+ * Bảng bài học (Course Lessons)
  * Các bài học chi tiết nằm trong từng chương.
  */
-export const lessons = pgTable('lessons', {
+export const courseLessons = pgTable('course_lessons', {
   id: uuid('id').defaultRandom().primaryKey(),
 
   // Liên kết với chương học
@@ -45,14 +43,16 @@ export const lessons = pgTable('lessons', {
     .notNull(),
 });
 
-export const lessonsRelations = relations(lessons, ({ many, one }) => ({
-  section: one(courseSections, {
-    fields: [lessons.sectionId],
-    references: [courseSections.id],
+export const courseLessonsRelations = relations(
+  courseLessons,
+  ({ many, one }) => ({
+    section: one(courseSections, {
+      fields: [courseLessons.sectionId],
+      references: [courseSections.id],
+    }),
+    courseLessonParts: many(courseLessonParts),
   }),
-  lessonParts: many(lessonParts),
-  resources: many(lessonResources),
-}));
+);
 
-export type Lesson = typeof lessons.$inferSelect;
-export type NewLesson = typeof lessons.$inferInsert;
+export type CourseLesson = typeof courseLessons.$inferSelect;
+export type NewCourseLesson = typeof courseLessons.$inferInsert;

@@ -8,6 +8,34 @@
       "when": 1779938712780,
       "tag": "0000_bored_reavers",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1779938712781,
+      "tag": "0001_drop_lesson_resources",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1779938712782,
+      "tag": "0002_rename_lessons_to_course_lessons",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1779938712783,
+      "tag": "0003_rename_lesson_parts_to_course_lesson_parts",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1779938712784,
+      "tag": "0004_drop_categories",
+      "breakpoints": true
     }
   ]
 }

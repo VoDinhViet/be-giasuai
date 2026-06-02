@@ -2,7 +2,12 @@ import * as dotenv from 'dotenv';
 import postgres from 'postgres';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import * as schema from '../schemas';
-import { courses, courseSections, lessons, lessonParts } from '../schemas';
+import {
+  courses,
+  courseSections,
+  courseLessons,
+  courseLessonParts,
+} from '../schemas';
 
 dotenv.config();
 
@@ -95,7 +100,7 @@ async function main() {
       for (let i = 0; i < sectionInfo.lessons.length; i++) {
         const lessonInfo = sectionInfo.lessons[i];
         const [lesson] = await db
-          .insert(lessons)
+          .insert(courseLessons)
           .values({
             sectionId: section.id,
             title: lessonInfo.title,
@@ -108,7 +113,7 @@ async function main() {
         console.log(`    📖 Lesson created: ${lesson.title}`);
 
         // 4. Tạo Lesson Parts (Tài liệu đi kèm)
-        await db.insert(lessonParts).values([
+        await db.insert(courseLessonParts).values([
           {
             lessonId: lesson.id,
             title: `Bài giảng chi tiết: ${lessonInfo.title}`,

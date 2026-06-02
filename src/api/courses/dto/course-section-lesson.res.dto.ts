@@ -1,4 +1,4 @@
-import { Expose } from 'class-transformer';
+import { Expose, Type } from 'class-transformer';
 
 import {
   BooleanField,
@@ -6,6 +6,7 @@ import {
   StringField,
   UUIDField,
 } from '../../../decorators/field.decorators';
+import { CourseLessonPartResDto } from './course-lesson-detail.res.dto';
 
 export class CourseSectionLessonResDto {
   @UUIDField({ description: 'ID bai hoc' })
@@ -35,6 +36,10 @@ export class CourseSectionLessonResDto {
   @BooleanField({ description: 'Trang thai xuat ban' })
   @Expose()
   isPublished!: boolean;
+
+  @Type(() => CourseLessonPartResDto)
+  @Expose()
+  lessonParts?: CourseLessonPartResDto[];
 
   @Expose()
   createdAt!: Date;

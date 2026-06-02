@@ -13,7 +13,6 @@ import { ClassesModule } from './api/classes/classes.module';
 import { UsersModule } from './api/users/users.module';
 import { CoursesModule } from './api/courses/courses.module';
 import { FilesModule } from './api/files/files.module';
-import { CategoriesModule } from './api/categories/categories.module';
 import { RolesGuard } from './guards/roles.guard';
 
 @Module({
@@ -30,7 +29,6 @@ import { RolesGuard } from './guards/roles.guard';
     UsersModule,
     CoursesModule,
     FilesModule,
-    CategoriesModule,
   ],
   controllers: [AppController],
   providers: [AppService, RolesGuard],
