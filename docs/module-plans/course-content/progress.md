@@ -18,7 +18,7 @@ Da co `courses` module, schema course/section/lesson/lesson part, public endpoin
 | Bai tap gan voi bai hoc | Dong 12 - Student | `planned` | Lesson parts co the chua du cho bai tap cham diem. | Dong bo voi `assessments-grading`. |
 | AI ho tro soan cau hoi nhanh | Dong 12 - Teacher | `planned` | Chua thay AI authoring. | Chuyen sang `ai-personalization` khi trien khai. |
 | Admin duyet noi dung giao vien | Dong 12 - Admin | `planned` | Chua thay moderation schema/status. | Them workflow duyet noi dung. |
-| Quan ly course/curriculum co ban | Dong 12 - Admin | `in-progress` | Backend co `POST/PATCH/DELETE /courses`, `PUT /courses/:courseId/curriculum`; FE da co delete va xem chi tiet. | Noi lai UI tao/sua course va curriculum editor theo schema moi. |
+| Quan ly course/curriculum co ban | Dong 12 - Admin | `in-progress` | Backend co `POST/PATCH/DELETE /courses`, `PUT /courses/:courseId/curriculum`; FE da co `/manage/courses/create`, delete va xem chi tiet. | Noi lai UI sua course va curriculum editor theo schema moi. |
 
 ## Phu thuoc
 

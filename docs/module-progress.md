@@ -35,8 +35,8 @@ Verification:
   - Pending: persistent `avatarUrl` and activity summary require data model/migration decisions.
 - `course-content`: `in-progress`
   - Backend done: course list/detail/search, section/lesson listing, lesson parts, Admin course create/update/delete, Admin curriculum sync, course spec and focused service tests.
-  - Frontend done: course list, course detail, section/lesson curriculum display, lesson learning page backed by paginated lesson parts.
-  - Pending: Admin create/update course UI, curriculum editor UI, published-only public scope, teacher authoring, simulator runtime, graded exercises, and Admin moderation.
+  - Frontend done: course list, course detail, Admin create course page, section/lesson curriculum display, lesson learning page backed by paginated lesson parts.
+  - Pending: Admin update course UI, curriculum editor UI, published-only public scope, teacher authoring, simulator runtime, graded exercises, and Admin moderation.
 - `learning-delivery`: `planned`
 - `assessments-grading`: `planned`
 - `ai-personalization`: `planned`
