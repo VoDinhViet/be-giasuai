@@ -14,7 +14,7 @@ import { ResetPasswordReqDto } from './dto/reset-password.req.dto';
 import { VerifyRegistrationOtpReqDto } from './dto/verify-registration-otp.req.dto';
 import { VerifyRegistrationOtpResDto } from './dto/verify-registration-otp.res.dto';
 import { ApiAuth, ApiPublic } from '../../decorators/http.decorators';
-import { User } from '../../decorators/user.decorator';
+import { CurrentUser } from '../../decorators/user.decorator';
 import { JwtPayloadType } from './types/jwt-payload.type';
 
 @ApiTags('auth')
@@ -118,7 +118,7 @@ export class AuthController {
     description: 'Xóa session hiện tại',
     statusCode: HttpStatus.NO_CONTENT,
   })
-  logout(@User() payload: JwtPayloadType): Promise<void> {
+  logout(@CurrentUser() payload: JwtPayloadType): Promise<void> {
     return this.authService.logout(payload);
   }
 }

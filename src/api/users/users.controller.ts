@@ -13,7 +13,7 @@ import { UserResDto } from './dto/user.res.dto';
 import { UserStatsResDto } from './dto/user-stats.res.dto';
 import { GetUsersDto } from './dto/get-users.dto';
 import { ApiAuth } from '../../decorators/http.decorators';
-import { User } from '../../decorators/user.decorator';
+import { CurrentUser } from '../../decorators/user.decorator';
 import { Roles } from '../../decorators/roles.decorator';
 import { Role } from '../../constants/role.constant';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -35,7 +35,7 @@ export class UsersController {
     type: UserResDto,
     summary: 'Lấy thông tin cá nhân',
   })
-  getMe(@User() payload: JwtPayloadType): Promise<UserResDto> {
+  getMe(@CurrentUser() payload: JwtPayloadType): Promise<UserResDto> {
     return this.usersService.findOne(payload.userId);
   }
 

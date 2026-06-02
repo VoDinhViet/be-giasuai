@@ -170,7 +170,7 @@ Errors:
 
 Request:
 
-- Current JWT payload from `@User()`.
+- Current JWT payload from `@CurrentUser()`.
 
 Response:
 

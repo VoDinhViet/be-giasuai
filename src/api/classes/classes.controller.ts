@@ -16,7 +16,7 @@ import { Role } from '../../constants/role.constant';
 import { ApiAuth, ApiPublic } from '../../decorators/http.decorators';
 import { UUIDParam } from '../../decorators/param.decorators';
 import { Roles } from '../../decorators/roles.decorator';
-import { User } from '../../decorators/user.decorator';
+import { CurrentUser } from '../../decorators/user.decorator';
 
 import { JwtPayloadType } from '../auth/types/jwt-payload.type';
 import { ClassesService } from './classes.service';
@@ -47,7 +47,7 @@ export class ClassesController {
   })
   getClasses(
     @Query() pageOptions: GetClassesReqDto,
-    @User() payload: JwtPayloadType,
+    @CurrentUser() payload: JwtPayloadType,
   ): Promise<OffsetPaginatedDto<ClassResDto>> {
     return this.classesService.getClasses(pageOptions, payload);
   }
@@ -60,7 +60,7 @@ export class ClassesController {
   })
   createClass(
     @Body() reqDto: CreateClassReqDto,
-    @User() payload: JwtPayloadType,
+    @CurrentUser() payload: JwtPayloadType,
   ): Promise<ClassResDto> {
     return this.classesService.createClass(reqDto, payload);
   }
@@ -82,7 +82,7 @@ export class ClassesController {
   })
   getClass(
     @UUIDParam('classId') classId: string,
-    @User() payload: JwtPayloadType,
+    @CurrentUser() payload: JwtPayloadType,
   ): Promise<ClassDetailResDto> {
     return this.classesService.getClass(classId, payload);
   }
@@ -95,7 +95,7 @@ export class ClassesController {
   })
   getClassDetailStats(
     @UUIDParam('classId') classId: string,
-    @User() payload: JwtPayloadType,
+    @CurrentUser() payload: JwtPayloadType,
   ): Promise<ClassDetailStatisticsResDto> {
     return this.classesService.getClassDetailStats(classId, payload);
   }
@@ -109,7 +109,7 @@ export class ClassesController {
   updateClass(
     @UUIDParam('classId') classId: string,
     @Body() updateClassDto: UpdateClassReqDto,
-    @User() payload: JwtPayloadType,
+    @CurrentUser() payload: JwtPayloadType,
   ): Promise<ClassResDto> {
     return this.classesService.updateClass(classId, updateClassDto, payload);
   }
@@ -121,7 +121,7 @@ export class ClassesController {
   })
   deleteClass(
     @UUIDParam('classId') classId: string,
-    @User() payload: JwtPayloadType,
+    @CurrentUser() payload: JwtPayloadType,
   ): Promise<void> {
     return this.classesService.deleteClass(classId, payload);
   }
@@ -133,7 +133,7 @@ export class ClassesController {
   })
   joinClass(
     @Param('inviteCode') inviteCode: string,
-    @User() payload: JwtPayloadType,
+    @CurrentUser() payload: JwtPayloadType,
   ): Promise<void> {
     return this.classesService.joinClass(inviteCode, payload);
   }
@@ -147,7 +147,7 @@ export class ClassesController {
   assignCourseToClass(
     @UUIDParam('classId') classId: string,
     @UUIDParam('courseId') courseId: string,
-    @User() payload: JwtPayloadType,
+    @CurrentUser() payload: JwtPayloadType,
   ): Promise<void> {
     return this.classesService.assignCourseToClass(classId, courseId, payload);
   }
@@ -163,7 +163,7 @@ export class ClassesController {
   getCoursesByClass(
     @UUIDParam('classId') classId: string,
     @Query() pageOptions: PageOptionsDto,
-    @User() payload: JwtPayloadType,
+    @CurrentUser() payload: JwtPayloadType,
   ): Promise<OffsetPaginatedDto<CourseResDto>> {
     return this.classesService.getCoursesByClass(classId, pageOptions, payload);
   }
@@ -177,7 +177,7 @@ export class ClassesController {
   assignStudentToClass(
     @UUIDParam('classId') classId: string,
     @UUIDParam('studentId') studentId: string,
-    @User() payload: JwtPayloadType,
+    @CurrentUser() payload: JwtPayloadType,
   ): Promise<void> {
     return this.classesService.assignStudentToClass(
       classId,
@@ -195,7 +195,7 @@ export class ClassesController {
   })
   getAssignedCourseIds(
     @UUIDParam('classId') classId: string,
-    @User() payload: JwtPayloadType,
+    @CurrentUser() payload: JwtPayloadType,
   ): Promise<string[]> {
     return this.classesService.getAssignedCourseIds(classId, payload);
   }
