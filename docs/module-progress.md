@@ -31,6 +31,7 @@ Verification:
 
 - `user-profiles`: `in-progress`
   - Backend done: current profile read/update `fullName`, Admin user detail, Student file upload access for avatar handoff.
+  - Frontend done: current-user profile page/update form, account-menu profile link, Admin user detail page link from user table.
   - Pending: persistent `avatarUrl` and activity summary require data model/migration decisions.
 - `course-content`: `in-progress`
 - `learning-delivery`: `planned`
