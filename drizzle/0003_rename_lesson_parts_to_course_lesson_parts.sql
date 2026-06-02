@@ -1,4 +1,22 @@
-ALTER TYPE IF EXISTS "public"."lesson_part_type" RENAME TO "course_lesson_part_type";--> statement-breakpoint
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM pg_type
+    JOIN pg_namespace ON pg_namespace.oid = pg_type.typnamespace
+    WHERE pg_namespace.nspname = 'public'
+      AND pg_type.typname = 'lesson_part_type'
+  )
+    AND NOT EXISTS (
+      SELECT 1
+      FROM pg_type
+      JOIN pg_namespace ON pg_namespace.oid = pg_type.typnamespace
+      WHERE pg_namespace.nspname = 'public'
+        AND pg_type.typname = 'course_lesson_part_type'
+    ) THEN
+    ALTER TYPE "public"."lesson_part_type" RENAME TO "course_lesson_part_type";
+  END IF;
+END $$;--> statement-breakpoint
 ALTER TABLE IF EXISTS "lesson_parts" RENAME TO "course_lesson_parts";--> statement-breakpoint
 DO $$
 BEGIN
