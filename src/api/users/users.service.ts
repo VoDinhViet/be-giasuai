@@ -29,6 +29,8 @@ import { plainToInstance } from 'class-transformer';
 import { OrderBy } from '../../constants/app.constant';
 import { UserStatsResDto } from './dto/user-stats.res.dto';
 import { CreateUserDto } from './dto/create-user.dto';
+import { Role } from '../../constants/role.constant';
+import { ToggleUserLockReqDto } from './dto/toggle-user-lock.req.dto';
 
 @Injectable()
 export class UsersService {
@@ -123,6 +125,14 @@ export class UsersService {
       .where(eq(users.id, userId))
       .limit(1);
 
+    if (!user) {
+      throw new AppException(
+        ErrorCode.E002,
+        'User not found',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
     return plainToInstance(UserResDto, user);
   }
 
@@ -155,10 +165,6 @@ export class UsersService {
           .from(users)
           .where(eq(users.isLocked, true)),
       ]);
-    console.log(total);
-    console.log(newUsers);
-    console.log(activeUsers);
-    console.log(lockedUsers);
     return {
       total: Number(total),
       new: Number(newUsers),
@@ -174,8 +180,68 @@ export class UsersService {
    * @param isLocked - Trạng thái khóa mới (true để khóa, false để mở khóa).
    * @returns Promise<void>
    */
-  async toggleLock(userId: string, isLocked: boolean): Promise<void> {
-    await this.db.update(users).set({ isLocked }).where(eq(users.id, userId));
+  async toggleLock(
+    userId: string,
+    reqDto: ToggleUserLockReqDto,
+  ): Promise<void> {
+    const user = await this.db.query.users.findFirst({
+      where: eq(users.id, userId),
+      columns: {
+        id: true,
+      },
+    });
+
+    if (!user) {
+      throw new AppException(
+        ErrorCode.E002,
+        'User not found',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    await this.db.transaction(async (tx) => {
+      await tx
+        .update(users)
+        .set({ isLocked: reqDto.isLocked })
+        .where(eq(users.id, userId));
+
+      if (reqDto.isLocked) {
+        await tx.delete(sessions).where(eq(sessions.userId, userId));
+      }
+    });
+  }
+
+  async verifyTeacher(userId: string): Promise<UserResDto> {
+    const teacher = await this.db.query.users.findFirst({
+      where: and(eq(users.id, userId), eq(users.role, Role.TEACHER)),
+      columns: {
+        id: true,
+      },
+    });
+
+    if (!teacher) {
+      throw new AppException(
+        ErrorCode.E009,
+        'Teacher not found',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    const [verifiedTeacher] = await this.db
+      .update(users)
+      .set({ isLocked: false })
+      .where(eq(users.id, userId))
+      .returning({
+        id: users.id,
+        email: users.email,
+        username: users.username,
+        fullName: users.fullName,
+        role: users.role,
+        isLocked: users.isLocked,
+        createdAt: users.createdAt,
+      });
+
+    return plainToInstance(UserResDto, verifiedTeacher);
   }
 
   /**

@@ -10,6 +10,14 @@ class ReflectionVariablesValidator {
   AUTH_CONFIRM_EMAIL_EXPIRES: string;
 
   @IsString()
+  @IsOptional()
+  AUTH_PASSWORD_RESET_EXPIRES: string;
+
+  @IsString()
+  @IsOptional()
+  AUTH_OTP_RESEND_COOLDOWN: string;
+
+  @IsString()
   AUTH_JWT_SECRET: string;
 
   @IsString()
@@ -28,6 +36,10 @@ export default registerAs<AuthConfig>('auth', () => {
   return {
     confirmEmailExpires:
       (process.env.AUTH_CONFIRM_EMAIL_EXPIRES as StringValue) || '24h',
+    passwordResetExpires:
+      (process.env.AUTH_PASSWORD_RESET_EXPIRES as StringValue) || '10m',
+    otpResendCooldown:
+      (process.env.AUTH_OTP_RESEND_COOLDOWN as StringValue) || '1m',
     secret: process.env.AUTH_JWT_SECRET || 'secret',
     expires: (process.env.AUTH_JWT_TOKEN_EXPIRES_IN as StringValue) || '15m',
     refreshSecret: process.env.AUTH_REFRESH_SECRET || 'refresh_secret',

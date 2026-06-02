@@ -1,11 +1,11 @@
-import { Expose } from 'class-transformer';
+import { Exclude, Expose } from 'class-transformer';
 import {
   BooleanField,
   StringField,
-  StringFieldOptional,
   UUIDField,
 } from '../../../decorators/field.decorators';
 
+@Exclude()
 export class UserResDto {
   @UUIDField({ description: 'ID người dùng' })
   @Expose()
