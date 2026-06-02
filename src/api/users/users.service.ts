@@ -31,6 +31,7 @@ import { UserStatsResDto } from './dto/user-stats.res.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { Role } from '../../constants/role.constant';
 import { ToggleUserLockReqDto } from './dto/toggle-user-lock.req.dto';
+import { UpdateCurrentUserReqDto } from './dto/update-current-user.req.dto';
 
 @Injectable()
 export class UsersService {
@@ -134,6 +135,48 @@ export class UsersService {
     }
 
     return plainToInstance(UserResDto, user);
+  }
+
+  async updateCurrentUser(
+    userId: string,
+    reqDto: UpdateCurrentUserReqDto,
+  ): Promise<UserResDto> {
+    if (reqDto.fullName === undefined) {
+      return this.findOne(userId);
+    }
+
+    const existingUser = await this.db.query.users.findFirst({
+      where: eq(users.id, userId),
+      columns: {
+        id: true,
+      },
+    });
+
+    if (!existingUser) {
+      throw new AppException(
+        ErrorCode.E002,
+        'User not found',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    const [updatedUser] = await this.db
+      .update(users)
+      .set({
+        fullName: reqDto.fullName,
+      })
+      .where(eq(users.id, userId))
+      .returning({
+        id: users.id,
+        email: users.email,
+        username: users.username,
+        fullName: users.fullName,
+        role: users.role,
+        isLocked: users.isLocked,
+        createdAt: users.createdAt,
+      });
+
+    return plainToInstance(UserResDto, updatedUser);
   }
 
   /**

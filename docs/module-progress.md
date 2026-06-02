@@ -29,7 +29,9 @@ Verification:
 
 ## Other Modules
 
-- `user-profiles`: `planned`
+- `user-profiles`: `in-progress`
+  - Backend done: current profile read/update `fullName`, Admin user detail, Student file upload access for avatar handoff.
+  - Pending: persistent `avatarUrl` and activity summary require data model/migration decisions.
 - `course-content`: `in-progress`
 - `learning-delivery`: `planned`
 - `assessments-grading`: `planned`

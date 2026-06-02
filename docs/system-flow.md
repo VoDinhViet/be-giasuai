@@ -43,8 +43,29 @@
 4. Client calls `POST /auth/password-reset` with email, OTP, and new password.
 5. Backend validates OTP, updates the password hash, deletes active sessions, and deletes the OTP cache entry.
 
+## User Profile Flow
+
+### Current User Profile
+
+1. Client calls `GET /users/me`.
+2. Backend loads the authenticated user by JWT payload user ID.
+3. Backend returns `UserResDto` whitelist fields.
+
+### Update Current User Profile
+
+1. Client calls `PATCH /users/me`.
+2. Backend accepts only profile fields. Current implementation supports `fullName`.
+3. Backend rejects missing users and never mutates email, username, role, lock status, password, sessions, tokens, or OTP data.
+
+### Avatar Upload Handoff
+
+1. Student, Teacher, or Admin uploads through `POST /files/upload`.
+2. Backend returns a public file URL.
+3. Persisting the URL as a user avatar requires a future `avatarUrl` schema/migration step.
+
 ## Current Constraints
 
 - OTP values are not exposed by the API and no email delivery provider is wired yet.
 - Teacher verification uses `users.isLocked` for the current backend phase.
 - Service package checks are intentionally not part of identity access yet.
+- User avatar persistence is not implemented yet because the current `users` schema has no `avatarUrl` field.

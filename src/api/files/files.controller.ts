@@ -24,7 +24,7 @@ export class FilesController {
   constructor(private readonly filesService: FilesService) {}
 
   @Post('upload')
-  @Roles(Role.ADMIN, Role.TEACHER)
+  @Roles(Role.ADMIN, Role.TEACHER, Role.STUDENT)
   @ApiAuth({
     summary: 'Upload file (Ảnh, Tài liệu...)',
     statusCode: 201,

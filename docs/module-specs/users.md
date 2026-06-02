@@ -30,6 +30,27 @@ Errors:
 
 - Missing user: `ErrorCode.E002`, HTTP `404`.
 
+### PATCH /users/me
+
+Request DTO:
+
+- `UpdateCurrentUserReqDto`
+
+Response DTO:
+
+- `UserResDto`
+
+Business rules:
+
+- Updates only current-user profile fields.
+- Current implementation supports `fullName`.
+- Does not allow changing email, username, role, lock status, password, sessions, tokens, or OTP data.
+- Returns the current user when no updatable field is provided.
+
+Errors:
+
+- Missing user: `ErrorCode.E002`, HTTP `404`.
+
 ### GET /users
 
 Permissions:
@@ -64,6 +85,25 @@ Response DTO:
 Business rules:
 
 - Returns total, new, active, and locked user counts.
+
+### GET /users/:userId
+
+Permissions:
+
+- `Role.ADMIN`
+
+Response DTO:
+
+- `UserResDto`
+
+Business rules:
+
+- Returns one user profile by ID.
+- Does not expose password hashes, sessions, OTP data, or tokens.
+
+Errors:
+
+- Missing user: `ErrorCode.E002`, HTTP `404`.
 
 ### PATCH /users/:userId/lock
 
@@ -158,14 +198,16 @@ Errors:
 - Drizzle database client through `DRIZZLE`
 - Schemas: `users`, `sessions`, `classRegistrations`
 - Shared offset pagination DTOs
+- Files module for avatar upload handoff. Persistent `avatarUrl` needs a future schema/migration decision.
 
 ## Security Rules
 
 - Admin-only account management routes use `@Roles(Role.ADMIN)`.
 - Responses whitelist fields through `UserResDto`.
 - Locking a user revokes active sessions.
+- Current-user profile update is whitelist-based and cannot mutate identity, role, password, lock, token, or session fields.
 
 ## Verification
 
-- `pnpm test auth.service.spec.ts users.service.spec.ts --runInBand`
+- `pnpm test users.service.spec.ts --runInBand`
 - `pnpm run build`

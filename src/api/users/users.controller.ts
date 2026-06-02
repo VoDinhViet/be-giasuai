@@ -21,6 +21,7 @@ import { JwtPayloadType } from '../auth/types/jwt-payload.type';
 import { OffsetPaginatedDto } from '../../common/offset-pagination/paginated.dto';
 import { UUIDParam } from '../../decorators/param.decorators';
 import { ToggleUserLockReqDto } from './dto/toggle-user-lock.req.dto';
+import { UpdateCurrentUserReqDto } from './dto/update-current-user.req.dto';
 
 @ApiTags('users')
 @Controller({
@@ -37,6 +38,18 @@ export class UsersController {
   })
   getMe(@CurrentUser() payload: JwtPayloadType): Promise<UserResDto> {
     return this.usersService.findOne(payload.userId);
+  }
+
+  @Patch('me')
+  @ApiAuth({
+    type: UserResDto,
+    summary: 'Cập nhật thông tin cá nhân',
+  })
+  updateMe(
+    @CurrentUser() payload: JwtPayloadType,
+    @Body() reqDto: UpdateCurrentUserReqDto,
+  ): Promise<UserResDto> {
+    return this.usersService.updateCurrentUser(payload.userId, reqDto);
   }
 
   @Get()
@@ -61,6 +74,16 @@ export class UsersController {
   })
   getStats(): Promise<UserStatsResDto> {
     return this.usersService.getStats();
+  }
+
+  @Get(':userId')
+  @Roles(Role.ADMIN)
+  @ApiAuth({
+    type: UserResDto,
+    summary: 'Lấy chi tiết người dùng',
+  })
+  getUser(@UUIDParam('userId') userId: string): Promise<UserResDto> {
+    return this.usersService.findOne(userId);
   }
 
   @Patch(':userId/lock')

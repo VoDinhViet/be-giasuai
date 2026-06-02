@@ -39,6 +39,33 @@ function createUpdateReturningMock(row: unknown): jest.Mock {
   });
 }
 
+function createSelectFindOneMock(row: unknown): Pick<
+  DbMock,
+  'update' | 'delete' | 'transaction'
+> & {
+  select: jest.Mock;
+} {
+  return {
+    query: {
+      users: {
+        findFirst: jest.fn(),
+      },
+    },
+    update: jest.fn(),
+    delete: jest.fn(),
+    transaction: jest.fn(),
+    select: jest.fn().mockReturnValue({
+      from: jest.fn().mockReturnValue({
+        where: jest.fn().mockReturnValue({
+          limit: jest.fn().mockResolvedValue(row ? [row] : []),
+        }),
+      }),
+    }),
+  } as unknown as Pick<DbMock, 'update' | 'delete' | 'transaction'> & {
+    select: jest.Mock;
+  };
+}
+
 describe('UsersService', () => {
   let service: UsersService;
   let db: DbMock;
@@ -120,5 +147,53 @@ describe('UsersService', () => {
       },
       status: HttpStatus.NOT_FOUND,
     });
+  });
+
+  it('updateCurrentUser updates only the current user profile fields', async () => {
+    db.query.users.findFirst.mockResolvedValue({ id: 'user-id' });
+    db.update = createUpdateReturningMock({
+      id: 'user-id',
+      email: 'student@example.com',
+      username: 'student',
+      fullName: 'Updated Name',
+      role: Role.STUDENT,
+      isLocked: false,
+      createdAt: new Date('2026-06-02T00:00:00.000Z'),
+    });
+
+    const result = await service.updateCurrentUser('user-id', {
+      fullName: 'Updated Name',
+    });
+
+    expect(result).toMatchObject({
+      id: 'user-id',
+      fullName: 'Updated Name',
+      role: Role.STUDENT,
+    });
+    const updateBuilder = db.update.mock.results[0].value;
+    expect(updateBuilder.set).toHaveBeenCalledWith({
+      fullName: 'Updated Name',
+    });
+  });
+
+  it('updateCurrentUser returns current profile when request has no updatable fields', async () => {
+    const dbWithSelect = createSelectFindOneMock({
+      id: 'user-id',
+      email: 'student@example.com',
+      username: 'student',
+      fullName: 'Current Name',
+      role: Role.STUDENT,
+      isLocked: false,
+      createdAt: new Date('2026-06-02T00:00:00.000Z'),
+    });
+    service = new UsersService(dbWithSelect as unknown as Database);
+
+    const result = await service.updateCurrentUser('user-id', {});
+
+    expect(result).toMatchObject({
+      id: 'user-id',
+      fullName: 'Current Name',
+    });
+    expect(dbWithSelect.update).not.toHaveBeenCalled();
   });
 });
