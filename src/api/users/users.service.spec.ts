@@ -75,6 +75,39 @@ describe('UsersService', () => {
     service = new UsersService(db as unknown as Database);
   });
 
+  it('getUsers excludes admin accounts by default', async () => {
+    const listWhere = jest.fn().mockReturnValue({
+      orderBy: jest.fn().mockReturnValue({
+        limit: jest.fn().mockReturnValue({
+          offset: jest.fn().mockResolvedValue([]),
+        }),
+      }),
+    });
+    const countWhere = jest.fn().mockResolvedValue([{ total: 0 }]);
+
+    db = {
+      ...db,
+      select: jest
+        .fn()
+        .mockReturnValueOnce({
+          from: jest.fn().mockReturnValue({
+            where: listWhere,
+          }),
+        })
+        .mockReturnValueOnce({
+          from: jest.fn().mockReturnValue({
+            where: countWhere,
+          }),
+        }),
+    } as unknown as DbMock;
+    service = new UsersService(db as unknown as Database);
+
+    await service.getUsers({ page: 1, limit: 10 });
+
+    expect(listWhere).toHaveBeenCalledWith(expect.anything());
+    expect(countWhere).toHaveBeenCalledWith(expect.anything());
+  });
+
   it('toggleLock deletes active sessions when locking a user', async () => {
     const txUpdateWhere = jest.fn().mockResolvedValue(undefined);
     const txDeleteWhere = jest.fn().mockResolvedValue(undefined);

@@ -70,6 +70,7 @@ Business rules:
 - Supports offset pagination.
 - Supports keyword filtering by email, username, and full name.
 - Supports filtering by role and lock status.
+- Excludes Admin accounts from the list response.
 - Sorts by `createdAt` using the requested order.
 
 ### GET /users/stats

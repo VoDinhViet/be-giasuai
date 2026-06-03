@@ -14,6 +14,7 @@ import {
   eq,
   gte,
   ilike,
+  ne,
   or,
   sql,
   type SQL,
@@ -41,7 +42,7 @@ export class UsersService {
   async getUsers(
     pageOptions: GetUsersDto,
   ): Promise<OffsetPaginatedDto<UserResDto>> {
-    const conditions: SQL[] = [];
+    const conditions: SQL[] = [ne(users.role, Role.ADMIN)];
 
     if (pageOptions.q) {
       const q = or(
