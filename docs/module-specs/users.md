@@ -69,7 +69,7 @@ Business rules:
 
 - Supports offset pagination.
 - Supports keyword filtering by email, username, and full name.
-- Supports filtering by role, lock status, and class ID.
+- Supports filtering by role and lock status.
 - Sorts by `createdAt` using the requested order.
 
 ### GET /users/stats
@@ -196,7 +196,7 @@ Errors:
 ## Dependencies
 
 - Drizzle database client through `DRIZZLE`
-- Schemas: `users`, `sessions`, `classRegistrations`
+- Schemas: `users`, `sessions`
 - Shared offset pagination DTOs
 - Files module for avatar upload handoff. Persistent `avatarUrl` needs a future schema/migration decision.
 

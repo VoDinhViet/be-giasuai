@@ -6,7 +6,7 @@ Cung cap lop quan tri tong hop de Admin nam duoc suc khoe he thong va xu ly cac 
 
 ## Ke hoach backend
 
-- Tao dashboard query service tong hop tu users, courses, classes, learning analytics va AI logs.
+- Tao dashboard query service tong hop tu users, learning analytics va AI logs.
 - Tao settings service cho cau hinh mac dinh, nhung rule runtime van nam tai module so huu.
 - Luu AI usage/conversation log de phuc vu chi phi va audit.
 - Tao support/ticket flow cho phan hoi, bao tri, khieu nai va tranh chap.
@@ -14,7 +14,7 @@ Cung cap lop quan tri tong hop de Admin nam duoc suc khoe he thong va xu ly cac 
 
 ## API/module de xuat
 
-- `admin-dashboard`: tong hop user/course/class/learning/AI metrics.
+- `admin-dashboard`: tong hop user/learning/AI metrics.
 - `system-settings`: cau hinh mac dinh cho learning/AI.
 - `ai-usage`: chi phi API, lich su hoi thoai, usage summary.
 - `support-tickets`: phan hoi, bao tri, khieu nai/tranh chap.

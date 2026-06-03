@@ -9,9 +9,7 @@ import redisConfig from './redis/redis.config';
 import { DatabaseModule } from './database/database.module';
 import { RedisModule } from './redis/redis.module';
 import { AuthModule } from './api/auth/auth.module';
-import { ClassesModule } from './api/classes/classes.module';
 import { UsersModule } from './api/users/users.module';
-import { CoursesModule } from './api/courses/courses.module';
 import { FilesModule } from './api/files/files.module';
 import { RolesGuard } from './guards/roles.guard';
 
@@ -25,9 +23,7 @@ import { RolesGuard } from './guards/roles.guard';
     DatabaseModule,
     RedisModule,
     AuthModule,
-    ClassesModule,
     UsersModule,
-    CoursesModule,
     FilesModule,
   ],
   controllers: [AppController],

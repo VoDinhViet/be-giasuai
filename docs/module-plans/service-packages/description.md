@@ -22,6 +22,6 @@ Module `service-packages` so huu goi dich vu `casual/plus/pro`, quyen loi theo g
 
 ## Nguyen tac lam sau
 
-- Khong chen package check vao `identity-access`, `learning-delivery`, `classroom-management` hoac `ai-personalization` trong giai doan dau.
+- Khong chen package check vao `identity-access`, `learning-delivery` hoac `ai-personalization` trong giai doan dau.
 - Cac module AI co the ghi log usage truoc, den giai doan nay moi ap quota.
 - Neu can placeholder, chi luu thong tin goi mac dinh, khong lam thay doi hanh vi API cot loi.

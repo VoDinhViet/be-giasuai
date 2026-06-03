@@ -20,7 +20,7 @@ Tach ro thong tin ho so khoi identity de viec cap nhat profile khong anh huong t
 ## Data concept
 
 - Profile basics: full name, avatar URL, optional display fields.
-- Admin activity summary: created at, updated at, lock status, role, class/course relationship summary.
+- Admin activity summary: created at, updated at, lock status, and role.
 
 ## RBAC
 

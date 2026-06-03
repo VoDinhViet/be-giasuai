@@ -7,7 +7,7 @@ Module `learning-delivery` so huu cach nguoi hoc di qua noi dung: bat dau hoc, l
 ## Pham vi chuc nang
 
 - Ghi nhan lich su hoc tap chi tiet.
-- Theo doi trang thai hoan thanh lesson/module.
+- Theo doi trang thai hoan thanh noi dung hoc.
 - Ap dung diem toi thieu de qua bai.
 - Mo khoa module tiep theo khi dat diem yeu cau.
 - Teacher thiet lap nguong diem qua bai cho lop.
@@ -23,6 +23,6 @@ Module `learning-delivery` so huu cach nguoi hoc di qua noi dung: bat dau hoc, l
 
 ## Ngoai pham vi
 
-- Noi dung course/lesson nam trong `course-content`.
+- Noi dung hoc can content model moi sau khi module course bi go.
 - Bai kiem tra va cham diem nam trong `assessments-grading`.
 - Dashboard tong hop va diem yeu nam trong `learning-analytics`.

@@ -2,7 +2,7 @@
 
 ## Muc tieu
 
-Tao nen tang assessment co the dung cho test dau vao, bai tap trong lesson va cac phan cham diem/giai thich bang rule hoac AI.
+Tao nen tang assessment co the dung cho test dau vao, bai tap trong noi dung hoc va cac phan cham diem/giai thich bang rule hoac AI.
 
 ## Ke hoach backend
 

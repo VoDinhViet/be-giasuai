@@ -33,14 +33,13 @@ Verification:
   - Backend done: current profile read/update `fullName`, Admin user detail, Student file upload access for avatar handoff.
   - Frontend done: current-user profile page/update form, account-menu profile link, Admin user detail page link from user table.
   - Pending: persistent `avatarUrl` and activity summary require data model/migration decisions.
-- `course-content`: `in-progress`
-  - Backend done: course list/detail/search, section/lesson listing, lesson parts, Admin course create/update/delete, Admin curriculum sync, course spec and focused service tests.
-  - Frontend done: course list, course detail, Admin create course page, section/lesson curriculum display, lesson learning page backed by paginated lesson parts.
-  - Pending: Admin update course UI, curriculum editor UI, published-only public scope, teacher authoring, simulator runtime, graded exercises, and Admin moderation.
 - `learning-delivery`: `planned`
 - `assessments-grading`: `planned`
 - `ai-personalization`: `planned`
 - `learning-analytics`: `planned`
-- `classroom-management`: `in-progress`
+- `course-content`: `removed`
+  - Backend removed: `courses` API module, related DTO/spec/tests, course schemas, course seed, and drop-table migration.
+- `classroom-management`: `removed`
+  - Backend removed: `classes` API module, related DTOs, class schemas, and drop-table migration.
 - `platform-admin`: `planned`
 - `service-packages`: `planned-later`

@@ -7,9 +7,6 @@ import {
   timestamp,
   uuid,
 } from 'drizzle-orm/pg-core';
-import { classCourses } from './class-courses';
-import { classRegistrations } from './class-registrations';
-import { classes } from './classes';
 import { sessions } from './sessions';
 
 export const userRoleEnum = pgEnum('user_role', [
@@ -35,9 +32,6 @@ export const users = pgTable('users', {
 
 export const usersRelations = relations(users, ({ many }) => ({
   sessions: many(sessions),
-  assignedClassCourses: many(classCourses),
-  classRegistrations: many(classRegistrations),
-  teachingClasses: many(classes),
 }));
 
 export type User = typeof users.$inferSelect;

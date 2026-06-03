@@ -2,7 +2,7 @@
 
 ## Muc tieu
 
-Hoan thien nen tang tai khoan va truy cap sao cho cac module hoc tap, lop hoc va AI co the dua vao mot nguoi dung da xac thuc, co role ro rang va co trang thai tai khoan hop le.
+Hoan thien nen tang tai khoan va truy cap sao cho cac module hoc tap va AI co the dua vao mot nguoi dung da xac thuc, co role ro rang va co trang thai tai khoan hop le.
 
 ## Ke hoach backend
 

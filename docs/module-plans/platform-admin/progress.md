@@ -10,7 +10,7 @@ Da co mot so endpoint stats rieng le, nhung chua co admin dashboard tong hop, se
 
 | Chuc nang | Nguon Excel | Status | Bang chung/Ghi chu | Viec tiep theo |
 | --- | --- | --- | --- | --- |
-| Admin dashboard dem nguoi dung/khoa hoc | Dong 8 - Admin | `in-progress` | `GET /users/stats` ton tai; course/class aggregate can xac minh. | Tao dashboard tong hop. |
+| Admin dashboard dem nguoi dung | Dong 8 - Admin | `in-progress` | `GET /users/stats` ton tai; course/class aggregate da bi go. | Tao dashboard tong hop tu module con lai. |
 | Tim kiem toan he thong | Dong 11 - Admin | `planned` | Chua thay global admin search. | Thiet ke cross-module search. |
 | Cau hinh nguong diem mac dinh | Dong 13 - Admin | `planned` | Chua co settings module. | Them `system-settings`. |
 | Cau hinh thuat toan goi y lo trinh | Dong 15 - Admin | `planned` | Chua co AI settings. | Luu prompt/algorithm policy. |
@@ -24,4 +24,3 @@ Da co mot so endpoint stats rieng le, nhung chua co admin dashboard tong hop, se
 
 - `ai-personalization` va `assessments-grading` cho AI logs/audit.
 - `learning-delivery` cho settings nguong diem.
-- `classroom-management` cho tranh chap Student - Teacher.

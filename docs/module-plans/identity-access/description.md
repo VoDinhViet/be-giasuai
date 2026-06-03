@@ -2,7 +2,7 @@
 
 ## Muc dich
 
-Module `identity-access` so huu danh tinh, dang nhap, dang ky, xac thuc va cac rule truy cap nen tang cua nguoi dung. Day la module dau vao cho Student, Teacher va Admin truoc khi dung cac chuc nang hoc tap, lop hoc va AI.
+Module `identity-access` so huu danh tinh, dang nhap, dang ky, xac thuc va cac rule truy cap nen tang cua nguoi dung. Day la module dau vao cho Student, Teacher va Admin truoc khi dung cac chuc nang hoc tap va AI.
 
 ## Pham vi chuc nang
 

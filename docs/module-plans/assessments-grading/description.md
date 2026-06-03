@@ -8,7 +8,7 @@ Module `assessments-grading` so huu bai test, bai tap, ket qua lam bai, cham die
 
 - Test dau vao de phan loai nang luc.
 - Ngan hang de test dau vao.
-- Bai tap trong lesson/module.
+- Bai tap trong noi dung hoc.
 - Cham diem tu dong/AI.
 - Giai thich loi sai cho Student.
 - Teacher xem AI cham diem tu luan va bai tap tuong tac.

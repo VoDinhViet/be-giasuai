@@ -16,10 +16,6 @@ export enum ErrorCode {
   E007 = 'auth.error.admin_registration_not_allowed',
   E008 = 'auth.error.invalid_refresh_token',
   E009 = 'auth.error.teacher_not_found',
-  E101 = 'class.error.teacher_not_found',
-  E102 = 'class.error.invalid_teacher_assignment',
-  E103 = 'class.error.forbidden',
-  E104 = 'class.error.unique_code_generation_failed',
-  E105 = 'class.error.not_found',
+  E105 = 'file.error.not_found',
   V003 = 'common.error.too_many_requests',
 }
