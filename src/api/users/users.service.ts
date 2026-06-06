@@ -149,20 +149,14 @@ export class UsersService {
       }
     }
 
-    const password = reqDto.password
-      ? await hashPassword(reqDto.password)
-      : undefined;
-
     await this.db.transaction(async (tx) => {
       await tx
         .update(users)
         .set({
-          email: reqDto.email,
-          username: reqDto.username,
-          fullName: reqDto.fullName,
-          password,
-          role: reqDto.role,
-          isLocked: reqDto.isLocked,
+          ...reqDto,
+          ...(reqDto.password
+            ? { password: await hashPassword(reqDto.password) }
+            : {}),
         })
         .where(eq(users.id, userId));
 
