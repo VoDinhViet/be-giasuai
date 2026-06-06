@@ -21,7 +21,7 @@ if (!databaseUrl) {
   throw new Error('DATABASE_URL is not set');
 }
 
-const defaultPassword = '123456';
+const defaultPassword = '12345678';
 
 const seedUsers = [
   {
