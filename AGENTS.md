@@ -1,5 +1,5 @@
 # AGENTS.md
 
-Project Codex rules live in `.codex/AGENTS.md`.
+Project Codex rules live in `.codex/rules/project.rules`.
 
-Read `.codex/AGENTS.md` before changing code, docs, database schema, migrations, seeds, or command workflow.
+Read `.codex/rules/project.rules` before changing code, docs, database schema, migrations, seeds, or command workflow.
