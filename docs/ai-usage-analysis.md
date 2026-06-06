@@ -70,12 +70,13 @@ await tx.update(users).set({
 Ví dụ insert và upsert dùng chung một object:
 
 ```ts
+const { phone, location, bio, avatarUrl } = reqDto;
 const profileValues = {
   userId,
-  phone: reqDto.phone,
-  location: reqDto.location,
-  bio: reqDto.bio,
-  avatarUrl: reqDto.avatarUrl,
+  phone,
+  location,
+  bio,
+  avatarUrl,
 };
 
 await tx.insert(userProfiles).values(profileValues).onConflictDoUpdate({

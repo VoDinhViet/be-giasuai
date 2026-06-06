@@ -150,13 +150,8 @@ export class UsersService {
     }
 
     await this.db.transaction(async (tx) => {
-      const profileValues = {
-        userId,
-        phone: reqDto.phone,
-        location: reqDto.location,
-        bio: reqDto.bio,
-        avatarUrl: reqDto.avatarUrl,
-      };
+      const { phone, location, bio, avatarUrl } = reqDto;
+      const profileValues = { userId, phone, location, bio, avatarUrl };
 
       await tx
         .update(users)
@@ -287,7 +282,9 @@ export class UsersService {
         .insert(users)
         .values({
           ...dto,
-          ...(dto.password ? { password: await hashPassword(dto.password) } : {}),
+          ...(dto.password
+            ? { password: await hashPassword(dto.password) }
+            : {}),
         })
         .returning({
           id: users.id,
