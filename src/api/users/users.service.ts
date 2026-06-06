@@ -107,29 +107,23 @@ export class UsersService {
   }
 
   async getUserById(userId: string): Promise<UserResDto> {
-    const [user] = await this.db
-      .select({
-        id: users.id,
-        email: users.email,
-        username: users.username,
-        fullName: users.fullName,
-        role: users.role,
-        isLocked: users.isLocked,
-        createdAt: users.createdAt,
-        profileUserId: userProfiles.userId,
-        profilePhone: userProfiles.phone,
-        profileLocation: userProfiles.location,
-        profileBio: userProfiles.bio,
-        profileAvatarUrl: userProfiles.avatarUrl,
-        profileCreatedAt: userProfiles.createdAt,
-        profileUpdatedAt: userProfiles.updatedAt,
-      })
-      .from(users)
-      .innerJoin(userProfiles, eq(userProfiles.userId, users.id))
-      .where(eq(users.id, userId))
-      .limit(1);
+    const user = await this.db.query.users.findFirst({
+      where: eq(users.id, userId),
+      columns: {
+        id: true,
+        email: true,
+        username: true,
+        fullName: true,
+        role: true,
+        isLocked: true,
+        createdAt: true,
+      },
+      with: {
+        profile: true,
+      },
+    });
 
-    if (!user) {
+    if (!user || !user.profile) {
       throw new AppException(
         ErrorCode.E002,
         'User not found',
@@ -137,7 +131,22 @@ export class UsersService {
       );
     }
 
-    return this.toUserResDto(user);
+    return this.toUserResDto({
+      id: user.id,
+      email: user.email,
+      username: user.username,
+      fullName: user.fullName,
+      role: user.role,
+      isLocked: user.isLocked,
+      createdAt: user.createdAt,
+      profileUserId: user.profile.userId,
+      profilePhone: user.profile.phone,
+      profileLocation: user.profile.location,
+      profileBio: user.profile.bio,
+      profileAvatarUrl: user.profile.avatarUrl,
+      profileCreatedAt: user.profile.createdAt,
+      profileUpdatedAt: user.profile.updatedAt,
+    });
   }
 
   async updateCurrentUser(
