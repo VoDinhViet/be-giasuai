@@ -109,15 +109,6 @@ export class UsersService {
   async getUserById(userId: string): Promise<UserResDto> {
     const user = await this.db.query.users.findFirst({
       where: eq(users.id, userId),
-      columns: {
-        id: true,
-        email: true,
-        username: true,
-        fullName: true,
-        role: true,
-        isLocked: true,
-        createdAt: true,
-      },
       with: {
         profile: true,
       },
