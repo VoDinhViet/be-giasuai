@@ -1,9 +1,9 @@
 import * as dotenv from 'dotenv';
 import postgres from 'postgres';
 import { drizzle } from 'drizzle-orm/postgres-js';
-import * as bcrypt from 'bcryptjs';
 import * as schema from '../schemas';
 import { userProfiles, users } from '../schemas';
+import { hashPassword } from '../../utils/password.util';
 
 dotenv.config();
 
@@ -25,7 +25,7 @@ async function main() {
     const fullName = 'System Administrator';
     const password = '123456';
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await hashPassword(password);
 
     const [adminUser] = await db
       .insert(users)

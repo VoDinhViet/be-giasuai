@@ -1,5 +1,4 @@
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
-import * as bcrypt from 'bcryptjs';
 import { AppException } from '../../exceptions/app.exception';
 import { ErrorCode } from '../../constants/error-code.constant';
 import { DRIZZLE } from '../../database/database.module';
@@ -30,6 +29,7 @@ import { UserStatsResDto } from './dto/user-stats.res.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { Role } from '../../constants/role.constant';
 import { UpdateUserReqDto } from './dto/update-user.req.dto';
+import { hashPassword } from '../../utils/password.util';
 
 @Injectable()
 export class UsersService {
@@ -166,7 +166,7 @@ export class UsersService {
     }
 
     const password = reqDto.password
-      ? await bcrypt.hash(reqDto.password, 10)
+      ? await hashPassword(reqDto.password)
       : undefined;
 
     await this.db.transaction(async (tx) => {
@@ -299,7 +299,7 @@ export class UsersService {
       );
     }
 
-    const hashedPassword = await bcrypt.hash(dto.password, 10);
+    const hashedPassword = await hashPassword(dto.password);
     const createdUser = await this.db.transaction(async (tx) => {
       const [user] = await tx
         .insert(users)

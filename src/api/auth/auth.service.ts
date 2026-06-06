@@ -26,6 +26,7 @@ import { userProfiles } from '../../database/schemas/user-profiles';
 
 import { CacheKey } from '../../constants/cache.constant';
 import { createCacheKey } from '../../utils/cache.util';
+import { hashPassword, verifyPassword } from '../../utils/password.util';
 import { LoginReqDto } from './dto/login.req.dto';
 import { LoginResDto } from './dto/login.res.dto';
 import { RegisterReqDto } from './dto/register.req.dto';
@@ -128,7 +129,7 @@ export class AuthService {
       );
     }
 
-    const isPasswordValid = await bcrypt.compare(dto.password, user.password);
+    const isPasswordValid = await verifyPassword(dto.password, user.password);
 
     if (!isPasswordValid) {
       throw new AppException(
@@ -195,10 +196,7 @@ export class AuthService {
       );
     }
 
-    const hashedPassword = await bcrypt.hash(
-      dto.password,
-      AuthService.PASSWORD_SALT_ROUNDS,
-    );
+    const hashedPassword = await hashPassword(dto.password);
     const createdUser = await this.db.transaction(async (tx) => {
       const [user] = await tx
         .insert(users)
@@ -341,10 +339,7 @@ export class AuthService {
     const cacheKey = createCacheKey(CacheKey.PASSWORD_RESET_OTP, dto.email);
     await this.ensureOtpMatches(cacheKey, dto.otpCode);
 
-    const hashedPassword = await bcrypt.hash(
-      dto.newPassword,
-      AuthService.PASSWORD_SALT_ROUNDS,
-    );
+    const hashedPassword = await hashPassword(dto.newPassword);
 
     await this.db.transaction(async (tx) => {
       await tx
