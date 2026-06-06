@@ -28,10 +28,6 @@ export class UserResDto {
   @Expose()
   role!: string;
 
-  @StringField({ description: 'Ma quyen', each: true })
-  @Expose()
-  permissionCodes!: string[];
-
   @BooleanField({ description: 'Trạng thái khóa' })
   @Expose()
   isLocked!: boolean;

@@ -29,7 +29,6 @@ import { OrderBy } from '../../constants/app.constant';
 import { UserStatsResDto } from './dto/user-stats.res.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { Role } from '../../constants/role.constant';
-import { getPermissionCodesByRole } from '../../constants/permission.constant';
 import { UpdateCurrentUserReqDto } from './dto/update-current-user.req.dto';
 import { UpdateUserReqDto } from './dto/update-user.req.dto';
 
@@ -86,13 +85,7 @@ export class UsersService {
     ]);
 
     return new OffsetPaginatedDto(
-      plainToInstance(
-        UserResDto,
-        entities.map((user) => ({
-          permissionCodes: getPermissionCodesByRole(user.role),
-          ...user,
-        })),
-      ),
+      plainToInstance(UserResDto, entities),
       new OffsetPaginationDto(total, pageOptions),
     );
   }
@@ -113,10 +106,7 @@ export class UsersService {
       );
     }
 
-    return plainToInstance(UserResDto, {
-      permissionCodes: getPermissionCodesByRole(user.role),
-      ...user,
-    });
+    return plainToInstance(UserResDto, user);
   }
 
   async updateCurrentUser(

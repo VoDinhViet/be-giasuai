@@ -23,7 +23,6 @@ Response DTO:
 Business rules:
 
 - Returns the current authenticated user profile.
-- Includes role-derived `permissionCodes` for frontend authorization.
 - Includes required extended profile data in `profile`.
 - Throws when the current user no longer exists.
 - Does not expose password hashes, sessions, OTP data, or tokens.
@@ -179,7 +178,6 @@ Business rules:
 - Creates the matching `user_profiles` row in the same transaction.
 - Email and username must be unique.
 - Admin-created accounts are not forced through public OTP verification.
-- Responses include role-derived `permissionCodes`.
 
 Errors:
 

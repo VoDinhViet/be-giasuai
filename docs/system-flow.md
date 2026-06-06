@@ -27,7 +27,7 @@
 2. `RolesGuard` reads required permission metadata after `AuthGuard` has attached the verified JWT payload.
 3. The guard derives permission codes from the current user role through the static RBAC map.
 4. `system:manage` grants broad Admin access.
-5. `GET /auth/me`, `GET /users/me`, login, and refresh-token responses expose role-derived `permissionCodes` for frontend authorization.
+5. `GET /auth/me`, login, and refresh-token responses expose role-derived `permissionCodes` for frontend authorization.
 
 ### Refresh Token
 

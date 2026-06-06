@@ -18,7 +18,6 @@ import { OffsetPaginatedDto } from '../../common/offset-pagination/paginated.dto
 import { OffsetPaginationDto } from '../../common/offset-pagination/offset-pagination.dto';
 import { OrderBy } from '../../constants/app.constant';
 import { ErrorCode } from '../../constants/error-code.constant';
-import { getPermissionCodesByRole } from '../../constants/permission.constant';
 import { Role } from '../../constants/role.constant';
 import { DRIZZLE } from '../../database/database.module';
 import type { Database } from '../../database/database.type';
@@ -88,7 +87,6 @@ type ClassInstructorRow = {
 };
 
 type ClassInstructorRes = ClassInstructorRow & {
-  permissionCodes: string[];
   profile: {
     userId: string;
     phone: string | null;
@@ -362,7 +360,6 @@ export class ClassesService {
           ...entity,
           instructor: {
             ...entity.instructor,
-            permissionCodes: getPermissionCodesByRole(entity.instructor.role),
           },
         })),
       ),
@@ -776,7 +773,6 @@ export class ClassesService {
         username: classRow.instructor.username,
         fullName: classRow.instructor.fullName,
         role: classRow.instructor.role,
-        permissionCodes: getPermissionCodesByRole(classRow.instructor.role),
         isLocked: classRow.instructor.isLocked,
         createdAt: classRow.instructor.createdAt,
         profile: {
