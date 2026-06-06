@@ -8,17 +8,17 @@ import { UserRole } from '../../../constants/role.constant';
 
 export class RegisterReqDto {
   @EmailField({ description: 'Địa chỉ email của người dùng' })
-  email: string;
+  email!: string;
 
   @PasswordField({ description: 'Mật khẩu người dùng' })
-  password: string;
+  password!: string;
 
   @StringField({ description: 'Họ và tên người dùng' })
-  fullName: string;
+  fullName!: string;
 
   @StringField({ description: 'Tên đăng nhập', toLowerCase: true })
-  username: string;
+  username!: string;
 
   @EnumField(() => UserRole, { description: 'Vai trò của người dùng' })
-  role: UserRole;
+  role!: UserRole;
 }

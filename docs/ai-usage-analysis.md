@@ -89,6 +89,33 @@ await tx.insert(userProfiles).values(profileValues).onConflictDoUpdate({
 
 Không dùng spread nếu DTO có field không thuộc bảng đang ghi, hoặc field cần đổi tên, tách bảng, tính toán phức tạp. Khi đó chỉ spread phần chắc chắn đúng, phần còn lại vẫn map rõ ràng.
 
+## Quy tắc auto-fix DTO strict property
+
+Khi TypeScript báo lỗi `Property ... has no initializer and is not definitely assigned in the constructor`, tôi sửa DTO theo quy tắc sau:
+
+- Field bắt buộc dùng definite assignment `!`.
+- Field optional giữ `?`.
+- Không thêm constructor chỉ để hết lỗi DTO.
+- Không gán giá trị mặc định giả nếu dữ liệu phải đến từ request, database hoặc `plainToInstance`.
+
+Ví dụ:
+
+```ts
+export class CreateUserDto {
+  email!: string;
+  fullName!: string;
+  role!: UserRole;
+}
+```
+
+Với field optional:
+
+```ts
+export class UpdateUserReqDto {
+  fullName?: string;
+}
+```
+
 ## Ưu điểm
 
 ### Tốc độ triển khai nhanh
