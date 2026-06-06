@@ -150,6 +150,14 @@ export class UsersService {
     }
 
     await this.db.transaction(async (tx) => {
+      const profileValues = {
+        userId,
+        phone: reqDto.phone,
+        location: reqDto.location,
+        bio: reqDto.bio,
+        avatarUrl: reqDto.avatarUrl,
+      };
+
       await tx
         .update(users)
         .set({
@@ -162,20 +170,11 @@ export class UsersService {
 
       await tx
         .insert(userProfiles)
-        .values({
-          userId,
-          phone: reqDto.phone,
-          location: reqDto.location,
-          bio: reqDto.bio,
-          avatarUrl: reqDto.avatarUrl,
-        })
+        .values(profileValues)
         .onConflictDoUpdate({
           target: userProfiles.userId,
           set: {
-            phone: reqDto.phone,
-            location: reqDto.location,
-            bio: reqDto.bio,
-            avatarUrl: reqDto.avatarUrl,
+            ...profileValues,
             updatedAt: new Date(),
           },
         });
@@ -283,13 +282,12 @@ export class UsersService {
       );
     }
 
-    const hashedPassword = await hashPassword(dto.password);
     const createdUser = await this.db.transaction(async (tx) => {
       const [user] = await tx
         .insert(users)
         .values({
           ...dto,
-          password: hashedPassword,
+          ...(dto.password ? { password: await hashPassword(dto.password) } : {}),
         })
         .returning({
           id: users.id,

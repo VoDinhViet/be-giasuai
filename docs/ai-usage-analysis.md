@@ -54,7 +54,7 @@ Ví dụ nên dùng:
 ```ts
 await tx.insert(users).values({
   ...dto,
-  password: hashedPassword,
+  ...(dto.password ? { password: await hashPassword(dto.password) } : {}),
 });
 ```
 
@@ -64,6 +64,26 @@ Ví dụ update có field cần xử lý trước:
 await tx.update(users).set({
   ...reqDto,
   ...(reqDto.password ? { password: await hashPassword(reqDto.password) } : {}),
+});
+```
+
+Ví dụ insert và upsert dùng chung một object:
+
+```ts
+const profileValues = {
+  userId,
+  phone: reqDto.phone,
+  location: reqDto.location,
+  bio: reqDto.bio,
+  avatarUrl: reqDto.avatarUrl,
+};
+
+await tx.insert(userProfiles).values(profileValues).onConflictDoUpdate({
+  target: userProfiles.userId,
+  set: {
+    ...profileValues,
+    updatedAt: new Date(),
+  },
 });
 ```
 

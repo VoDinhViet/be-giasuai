@@ -197,13 +197,12 @@ export class AuthService {
       );
     }
 
-    const hashedPassword = await hashPassword(dto.password);
     const createdUser = await this.db.transaction(async (tx) => {
       const [user] = await tx
         .insert(users)
         .values({
           ...dto,
-          password: hashedPassword,
+          ...(dto.password ? { password: await hashPassword(dto.password) } : {}),
           isLocked: true,
         })
         .returning({
