@@ -6,6 +6,7 @@ import { DRIZZLE } from '../../database/database.module';
 import type { Database } from '../../database/database.type';
 import { users } from '../../database/schemas/users';
 import { sessions } from '../../database/schemas/sessions';
+import { userProfiles } from '../../database/schemas/user-profiles';
 import {
   and,
   asc,
@@ -20,7 +21,6 @@ import {
   type SQL,
 } from 'drizzle-orm';
 import { GetUsersDto } from './dto/get-users.dto';
-import { PageOptionsDto } from '../../common/offset-pagination/page-options.dto';
 import { OffsetPaginatedDto } from '../../common/offset-pagination/paginated.dto';
 import { OffsetPaginationDto } from '../../common/offset-pagination/offset-pagination.dto';
 import { UserResDto } from './dto/user.res.dto';
@@ -29,8 +29,9 @@ import { OrderBy } from '../../constants/app.constant';
 import { UserStatsResDto } from './dto/user-stats.res.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { Role } from '../../constants/role.constant';
-import { ToggleUserLockReqDto } from './dto/toggle-user-lock.req.dto';
+import { getPermissionCodesByRole } from '../../constants/permission.constant';
 import { UpdateCurrentUserReqDto } from './dto/update-current-user.req.dto';
+import { UpdateUserReqDto } from './dto/update-user.req.dto';
 
 @Injectable()
 export class UsersService {
@@ -78,22 +79,34 @@ export class UsersService {
           role: users.role,
           isLocked: users.isLocked,
           createdAt: users.createdAt,
+          profileUserId: userProfiles.userId,
+          profilePhone: userProfiles.phone,
+          profileLocation: userProfiles.location,
+          profileBio: userProfiles.bio,
+          profileAvatarUrl: userProfiles.avatarUrl,
+          profileCreatedAt: userProfiles.createdAt,
+          profileUpdatedAt: userProfiles.updatedAt,
         })
         .from(users)
+        .innerJoin(userProfiles, eq(userProfiles.userId, users.id))
         .where(where)
         .orderBy(orderBy)
         .limit(pageOptions.limit)
         .offset(pageOptions.offset),
-      this.db.select({ total: count() }).from(users).where(where),
+      this.db
+        .select({ total: count() })
+        .from(users)
+        .innerJoin(userProfiles, eq(userProfiles.userId, users.id))
+        .where(where),
     ]);
 
     return new OffsetPaginatedDto(
-      plainToInstance(UserResDto, userRows),
+      userRows.map((user) => this.toUserResDto(user)),
       new OffsetPaginationDto(total, pageOptions),
     );
   }
 
-  async findOne(userId: string): Promise<UserResDto> {
+  async getUserById(userId: string): Promise<UserResDto> {
     const [user] = await this.db
       .select({
         id: users.id,
@@ -103,8 +116,16 @@ export class UsersService {
         role: users.role,
         isLocked: users.isLocked,
         createdAt: users.createdAt,
+        profileUserId: userProfiles.userId,
+        profilePhone: userProfiles.phone,
+        profileLocation: userProfiles.location,
+        profileBio: userProfiles.bio,
+        profileAvatarUrl: userProfiles.avatarUrl,
+        profileCreatedAt: userProfiles.createdAt,
+        profileUpdatedAt: userProfiles.updatedAt,
       })
       .from(users)
+      .innerJoin(userProfiles, eq(userProfiles.userId, users.id))
       .where(eq(users.id, userId))
       .limit(1);
 
@@ -116,49 +137,138 @@ export class UsersService {
       );
     }
 
-    return plainToInstance(UserResDto, user);
+    return this.toUserResDto(user);
   }
 
   async updateCurrentUser(
     userId: string,
     reqDto: UpdateCurrentUserReqDto,
   ): Promise<UserResDto> {
-    if (reqDto.fullName === undefined) {
-      return this.findOne(userId);
+    const hasProfileUpdate =
+      reqDto.phone !== undefined ||
+      reqDto.location !== undefined ||
+      reqDto.bio !== undefined ||
+      reqDto.avatarUrl !== undefined;
+
+    if (reqDto.fullName === undefined && !hasProfileUpdate) {
+      return this.getUserById(userId);
     }
 
-    const existingUser = await this.db.query.users.findFirst({
-      where: eq(users.id, userId),
-      columns: {
-        id: true,
-      },
+    await this.ensureUserExists(userId);
+
+    await this.db.transaction(async (tx) => {
+      if (reqDto.fullName !== undefined) {
+        await tx
+          .update(users)
+          .set({
+            fullName: reqDto.fullName,
+          })
+          .where(eq(users.id, userId));
+      }
+
+      if (hasProfileUpdate) {
+        await tx
+          .insert(userProfiles)
+          .values({
+            userId,
+            phone: reqDto.phone,
+            location: reqDto.location,
+            bio: reqDto.bio,
+            avatarUrl: reqDto.avatarUrl,
+          })
+          .onConflictDoUpdate({
+            target: userProfiles.userId,
+            set: {
+              phone: reqDto.phone,
+              location: reqDto.location,
+              bio: reqDto.bio,
+              avatarUrl: reqDto.avatarUrl,
+              updatedAt: new Date(),
+            },
+          });
+      }
     });
 
-    if (!existingUser) {
-      throw new AppException(
-        ErrorCode.E002,
-        'User not found',
-        HttpStatus.NOT_FOUND,
-      );
-    }
+    return this.getUserById(userId);
+  }
 
-    const [updatedUser] = await this.db
-      .update(users)
-      .set({
-        fullName: reqDto.fullName,
-      })
-      .where(eq(users.id, userId))
-      .returning({
-        id: users.id,
-        email: users.email,
-        username: users.username,
-        fullName: users.fullName,
-        role: users.role,
-        isLocked: users.isLocked,
-        createdAt: users.createdAt,
+  async update(userId: string, reqDto: UpdateUserReqDto): Promise<UserResDto> {
+    await this.ensureUserExists(userId);
+
+    const hasProfileUpdate =
+      reqDto.phone !== undefined ||
+      reqDto.location !== undefined ||
+      reqDto.bio !== undefined ||
+      reqDto.avatarUrl !== undefined;
+
+    if (reqDto.email || reqDto.username) {
+      const duplicatedUser = await this.db.query.users.findFirst({
+        where: and(
+          ne(users.id, userId),
+          or(
+            reqDto.email ? eq(users.email, reqDto.email) : undefined,
+            reqDto.username ? eq(users.username, reqDto.username) : undefined,
+          ),
+        ),
+        columns: {
+          id: true,
+        },
       });
 
-    return plainToInstance(UserResDto, updatedUser);
+      if (duplicatedUser) {
+        throw new AppException(
+          ErrorCode.E001,
+          'User with this email or username already exists',
+          HttpStatus.CONFLICT,
+        );
+      }
+    }
+
+    const password = reqDto.password
+      ? await bcrypt.hash(reqDto.password, 10)
+      : undefined;
+
+    await this.db.transaction(async (tx) => {
+      await tx
+        .update(users)
+        .set({
+          email: reqDto.email,
+          username: reqDto.username,
+          fullName: reqDto.fullName,
+          password,
+          role: reqDto.role,
+          isLocked: reqDto.isLocked,
+        })
+        .where(eq(users.id, userId));
+
+      if (hasProfileUpdate) {
+        await tx
+          .insert(userProfiles)
+          .values({
+            userId,
+            phone: reqDto.phone,
+            location: reqDto.location,
+            bio: reqDto.bio,
+            avatarUrl: reqDto.avatarUrl,
+          })
+          .onConflictDoUpdate({
+            target: userProfiles.userId,
+            set: {
+              phone: reqDto.phone,
+              location: reqDto.location,
+              bio: reqDto.bio,
+              avatarUrl: reqDto.avatarUrl,
+              updatedAt: new Date(),
+            },
+          });
+      }
+
+      if (reqDto.isLocked) {
+        await tx.delete(sessions).where(eq(sessions.userId, userId));
+      }
+    });
+
+    return this.getUserById(userId);
   }
 
   /**
@@ -198,21 +308,12 @@ export class UsersService {
     };
   }
 
-  /**
-   * Cập nhật trạng thái khóa/mở khóa của tài khoản người dùng.
-   *
-   * @param userId - ID của người dùng cần cập nhật.
-   * @param isLocked - Trạng thái khóa mới (true để khóa, false để mở khóa).
-   * @returns Promise<void>
-   */
-  async toggleLock(
-    userId: string,
-    reqDto: ToggleUserLockReqDto,
-  ): Promise<void> {
+  async toggleLock(userId: string): Promise<UserResDto> {
     const user = await this.db.query.users.findFirst({
       where: eq(users.id, userId),
       columns: {
         id: true,
+        isLocked: true,
       },
     });
 
@@ -224,72 +325,19 @@ export class UsersService {
       );
     }
 
+    const nextIsLocked = !user.isLocked;
     await this.db.transaction(async (tx) => {
       await tx
         .update(users)
-        .set({ isLocked: reqDto.isLocked })
+        .set({ isLocked: nextIsLocked })
         .where(eq(users.id, userId));
 
-      if (reqDto.isLocked) {
+      if (nextIsLocked) {
         await tx.delete(sessions).where(eq(sessions.userId, userId));
       }
     });
-  }
 
-  async verifyTeacher(userId: string): Promise<UserResDto> {
-    const teacher = await this.db.query.users.findFirst({
-      where: and(eq(users.id, userId), eq(users.role, Role.TEACHER)),
-      columns: {
-        id: true,
-      },
-    });
-
-    if (!teacher) {
-      throw new AppException(
-        ErrorCode.E009,
-        'Teacher not found',
-        HttpStatus.NOT_FOUND,
-      );
-    }
-
-    const [verifiedTeacher] = await this.db
-      .update(users)
-      .set({ isLocked: false })
-      .where(eq(users.id, userId))
-      .returning({
-        id: users.id,
-        email: users.email,
-        username: users.username,
-        fullName: users.fullName,
-        role: users.role,
-        isLocked: users.isLocked,
-        createdAt: users.createdAt,
-      });
-
-    return plainToInstance(UserResDto, verifiedTeacher);
-  }
-
-  /**
-   * Xóa một người dùng khỏi hệ thống.
-   *
-   * @param userId - ID của người dùng cần xóa.
-   * @returns Promise<void>
-   * @throws {AppException} Nếu không tìm thấy người dùng (E002).
-   */
-  async delete(userId: string): Promise<void> {
-    const user = await this.db.query.users.findFirst({
-      where: eq(users.id, userId),
-    });
-
-    if (!user) {
-      throw new AppException(
-        ErrorCode.E002,
-        'User not found',
-        HttpStatus.NOT_FOUND,
-      );
-    }
-
-    await this.db.delete(users).where(eq(users.id, userId));
+    return this.getUserById(userId);
   }
 
   async create(dto: CreateUserDto): Promise<UserResDto> {
@@ -309,25 +357,79 @@ export class UsersService {
     }
 
     const hashedPassword = await bcrypt.hash(dto.password, 10);
-    const [createdUser] = await this.db
-      .insert(users)
-      .values({
-        email: dto.email,
-        username: dto.username,
-        password: hashedPassword,
-        fullName: dto.fullName,
-        role: dto.role,
-      })
-      .returning({
-        id: users.id,
-        email: users.email,
-        username: users.username,
-        fullName: users.fullName,
-        role: users.role,
-        isLocked: users.isLocked,
-        createdAt: users.createdAt,
-      });
+    const createdUser = await this.db.transaction(async (tx) => {
+      const [user] = await tx
+        .insert(users)
+        .values({
+          email: dto.email,
+          username: dto.username,
+          password: hashedPassword,
+          fullName: dto.fullName,
+          role: dto.role,
+        })
+        .returning({
+          id: users.id,
+        });
 
-    return plainToInstance(UserResDto, createdUser);
+      await tx.insert(userProfiles).values({ userId: user.id });
+
+      return user;
+    });
+
+    return this.getUserById(createdUser.id);
+  }
+
+  private async ensureUserExists(userId: string): Promise<void> {
+    const existingUser = await this.db.query.users.findFirst({
+      where: eq(users.id, userId),
+      columns: {
+        id: true,
+      },
+    });
+
+    if (!existingUser) {
+      throw new AppException(
+        ErrorCode.E002,
+        'User not found',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+  }
+
+  private toUserResDto(user: {
+    id: string;
+    email: string;
+    username: string;
+    fullName: string;
+    role: string;
+    isLocked: boolean;
+    createdAt: Date;
+    profileUserId: string;
+    profilePhone: string | null;
+    profileLocation: string | null;
+    profileBio: string | null;
+    profileAvatarUrl: string | null;
+    profileCreatedAt: Date;
+    profileUpdatedAt: Date;
+  }): UserResDto {
+    return plainToInstance(UserResDto, {
+      id: user.id,
+      email: user.email,
+      username: user.username,
+      fullName: user.fullName,
+      role: user.role,
+      permissionCodes: getPermissionCodesByRole(user.role),
+      isLocked: user.isLocked,
+      createdAt: user.createdAt,
+      profile: {
+        userId: user.profileUserId,
+        phone: user.profilePhone,
+        location: user.profileLocation,
+        bio: user.profileBio,
+        avatarUrl: user.profileAvatarUrl,
+        createdAt: user.profileCreatedAt,
+        updatedAt: user.profileUpdatedAt,
+      },
+    });
   }
 }

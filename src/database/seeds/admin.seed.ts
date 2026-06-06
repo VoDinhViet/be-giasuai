@@ -3,7 +3,7 @@ import postgres from 'postgres';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import * as bcrypt from 'bcryptjs';
 import * as schema from '../schemas';
-import { users } from '../schemas';
+import { userProfiles, users } from '../schemas';
 
 dotenv.config();
 
@@ -45,6 +45,11 @@ async function main() {
         },
       })
       .returning();
+
+    await db
+      .insert(userProfiles)
+      .values({ userId: adminUser.id })
+      .onConflictDoNothing({ target: userProfiles.userId });
 
     console.log(`✅ Admin account created/updated successfully!`);
     console.log(`📧 Email: ${adminUser.email}`);

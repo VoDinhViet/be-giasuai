@@ -12,7 +12,7 @@ src/api/users/
 
 ## Public API
 
-All users endpoints require JWT authentication. Admin management endpoints require `Role.ADMIN`.
+All users endpoints require JWT authentication. Admin management endpoints use role-derived permission checks.
 
 ### GET /users/me
 
@@ -23,6 +23,8 @@ Response DTO:
 Business rules:
 
 - Returns the current authenticated user profile.
+- Includes role-derived `permissionCodes` for frontend authorization.
+- Includes required extended profile data in `profile`.
 - Throws when the current user no longer exists.
 - Does not expose password hashes, sessions, OTP data, or tokens.
 
@@ -43,7 +45,8 @@ Response DTO:
 Business rules:
 
 - Updates only current-user profile fields.
-- Current implementation supports `fullName`.
+- Supports `fullName`, phone, location, bio, and avatar URL.
+- Extended profile fields are stored in the existing `user_profiles` row for the user.
 - Does not allow changing email, username, role, lock status, password, sessions, tokens, or OTP data.
 - Returns the current user when no updatable field is provided.
 
@@ -55,7 +58,7 @@ Errors:
 
 Permissions:
 
-- `Role.ADMIN`
+- `users:read`
 
 Query DTO:
 
@@ -77,7 +80,7 @@ Business rules:
 
 Permissions:
 
-- `Role.ADMIN`
+- `users:read`
 
 Response DTO:
 
@@ -91,7 +94,7 @@ Business rules:
 
 Permissions:
 
-- `Role.ADMIN`
+- `users:read`
 
 Response DTO:
 
@@ -100,42 +103,22 @@ Response DTO:
 Business rules:
 
 - Returns one user profile by ID.
+- Includes required extended profile data in `profile`.
 - Does not expose password hashes, sessions, OTP data, or tokens.
 
 Errors:
 
 - Missing user: `ErrorCode.E002`, HTTP `404`.
 
-### PATCH /users/:userId/lock
+### PATCH /users/:userId
 
 Permissions:
 
-- `Role.ADMIN`
+- `users:manage`
 
 Request DTO:
 
-- `ToggleUserLockReqDto`
-
-Response:
-
-- No body.
-
-Business rules:
-
-- User must exist.
-- Updates `users.isLocked`.
-- When locking a user, all active sessions for that user are deleted.
-- Unlocking a user does not create a new session.
-
-Errors:
-
-- Missing user: `ErrorCode.E002`, HTTP `404`.
-
-### PATCH /users/:userId/verify-teacher
-
-Permissions:
-
-- `Role.ADMIN`
+- `UpdateUserReqDto`
 
 Response DTO:
 
@@ -143,28 +126,34 @@ Response DTO:
 
 Business rules:
 
-- Target user must exist and have role `TEACHER`.
-- Sets `users.isLocked = false`.
-- This is the current Teacher verification mechanism until a dedicated teacher verification schema is added.
+- User must exist.
+- Admin can update whitelisted account fields: email, username, full name, password, role, and lock status.
+- Email and username must remain unique.
+- Password is hashed before saving when provided.
+- When `isLocked` is set to `true`, all active sessions for that user are deleted.
+- Response never exposes password hashes, sessions, OTP data, or tokens.
 
 Errors:
 
-- Missing/non-teacher target: `ErrorCode.E009`, HTTP `404`.
+- Missing user: `ErrorCode.E002`, HTTP `404`.
+- Duplicate email/username: `ErrorCode.E001`, HTTP `409`.
 
-### DELETE /users/:userId
+### PATCH /users/:userId/toggle-lock
 
 Permissions:
 
-- `Role.ADMIN`
+- `users:manage`
 
-Response:
+Response DTO:
 
-- No body.
+- `UserResDto`
 
 Business rules:
 
 - User must exist.
-- Deletes the user row.
+- Flips the current `users.isLocked` value on the server.
+- When the result is locked, all active sessions for that user are deleted.
+- When the result is unlocked, no session is created.
 
 Errors:
 
@@ -174,7 +163,7 @@ Errors:
 
 Permissions:
 
-- `Role.ADMIN`
+- `users:manage`
 
 Request DTO:
 
@@ -187,8 +176,10 @@ Response DTO:
 Business rules:
 
 - Creates users directly by Admin.
+- Creates the matching `user_profiles` row in the same transaction.
 - Email and username must be unique.
 - Admin-created accounts are not forced through public OTP verification.
+- Responses include role-derived `permissionCodes`.
 
 Errors:
 
@@ -197,13 +188,15 @@ Errors:
 ## Dependencies
 
 - Drizzle database client through `DRIZZLE`
-- Schemas: `users`, `sessions`
+- Schemas: `users`, `sessions`, `user_profiles`
+- `user_profiles.user_id` is the primary key and cascades when the owning user is deleted.
+- Every user creation path must create the matching `user_profiles` row before returning.
 - Shared offset pagination DTOs
-- Files module for avatar upload handoff. Persistent `avatarUrl` needs a future schema/migration decision.
+- Files module for avatar upload handoff.
 
 ## Security Rules
 
-- Admin-only account management routes use `@Roles(Role.ADMIN)`.
+- Admin-only account management routes use `@Permissions(...)` with role-derived RBAC.
 - Responses whitelist fields through `UserResDto`.
 - Locking a user revokes active sessions.
 - Current-user profile update is whitelist-based and cannot mutate identity, role, password, lock, token, or session fields.

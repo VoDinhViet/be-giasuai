@@ -8,6 +8,7 @@ import {
   uuid,
 } from 'drizzle-orm/pg-core';
 import { sessions } from './sessions';
+import { userProfiles } from './user-profiles';
 
 export const userRoleEnum = pgEnum('user_role', [
   'ADMIN',
@@ -30,8 +31,12 @@ export const users = pgTable('users', {
     .notNull(),
 });
 
-export const usersRelations = relations(users, ({ many }) => ({
+export const usersRelations = relations(users, ({ many, one }) => ({
   sessions: many(sessions),
+  profile: one(userProfiles, {
+    fields: [users.id],
+    references: [userProfiles.userId],
+  }),
 }));
 
 export type User = typeof users.$inferSelect;

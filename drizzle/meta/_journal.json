@@ -43,6 +43,125 @@
       "when": 1780450957002,
       "tag": "0005_grey_hawkeye",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1780469878814,
+      "tag": "0006_brown_penance",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1780479965933,
+      "tag": "0007_tough_captain_cross",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1780480000000,
+      "tag": "0008_rename_course_instructor_to_author",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1780551924855,
+      "tag": "0009_cheerful_black_bird",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1780558707186,
+      "tag": "0010_flashy_ego",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1780561787203,
+      "tag": "0011_bored_grandmaster",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1780564165079,
+      "tag": "0012_opposite_sue_storm",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1780641461860,
+      "tag": "0013_mute_shinobi_shaw",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1780643248855,
+      "tag": "0014_lovely_carmella_unuscione",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1780643520402,
+      "tag": "0015_mean_korath",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1780643723844,
+      "tag": "0016_strange_gamma_corps",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1780644394420,
+      "tag": "0017_violet_hawkeye",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1780644624198,
+      "tag": "0018_last_rocket_racer",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1780644785320,
+      "tag": "0019_daily_king_bedlam",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1780644990026,
+      "tag": "0020_omniscient_vivisector",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1780646313179,
+      "tag": "0021_messy_iron_monger",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1780711139827,
+      "tag": "0022_backfill_user_profiles",
+      "breakpoints": true
     }
   ]
 }

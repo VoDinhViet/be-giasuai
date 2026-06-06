@@ -22,6 +22,7 @@ import { DRIZZLE } from '../../database/database.module';
 import type { Database } from '../../database/database.type';
 import { users } from '../../database/schemas/users';
 import { sessions } from '../../database/schemas/sessions';
+import { userProfiles } from '../../database/schemas/user-profiles';
 
 import { CacheKey } from '../../constants/cache.constant';
 import { createCacheKey } from '../../utils/cache.util';
@@ -40,6 +41,7 @@ import { ResetPasswordReqDto } from './dto/reset-password.req.dto';
 import { RefreshTokenReqDto } from './dto/refresh-token.req.dto';
 import type { RefreshJwtPayloadType } from './types/refresh-jwt-payload.type';
 import { Role } from '../../constants/role.constant';
+import { getPermissionCodesByRole } from '../../constants/permission.constant';
 
 type OtpCacheValue = {
   codeHash: string;
@@ -164,6 +166,8 @@ export class AuthService {
 
     return plainToInstance(LoginResDto, {
       userId: user.id,
+      role: user.role,
+      permissionCodes: getPermissionCodesByRole(user.role),
       ...tokens,
     });
   }
@@ -195,19 +199,25 @@ export class AuthService {
       dto.password,
       AuthService.PASSWORD_SALT_ROUNDS,
     );
-    const [createdUser] = await this.db
-      .insert(users)
-      .values({
-        email: dto.email,
-        username: dto.username,
-        password: hashedPassword,
-        fullName: dto.fullName,
-        role: dto.role,
-        isLocked: true,
-      })
-      .returning({
-        id: users.id,
-      });
+    const createdUser = await this.db.transaction(async (tx) => {
+      const [user] = await tx
+        .insert(users)
+        .values({
+          email: dto.email,
+          username: dto.username,
+          password: hashedPassword,
+          fullName: dto.fullName,
+          role: dto.role,
+          isLocked: true,
+        })
+        .returning({
+          id: users.id,
+        });
+
+      await tx.insert(userProfiles).values({ userId: user.id });
+
+      return user;
+    });
 
     await this.issueRegistrationOtp(createdUser.id);
 
@@ -408,6 +418,8 @@ export class AuthService {
 
     return plainToInstance(LoginResDto, {
       userId: session.userId,
+      role: session.user.role,
+      permissionCodes: getPermissionCodesByRole(session.user.role),
       ...tokens,
     });
   }
@@ -495,9 +507,7 @@ export class AuthService {
   }
 
   private async ensureOtpRequestAllowed(cooldownKey: string): Promise<void> {
-    const isOnCooldown = await this.cacheManager.get<boolean>(
-      cooldownKey,
-    );
+    const isOnCooldown = await this.cacheManager.get<boolean>(cooldownKey);
 
     if (isOnCooldown) {
       throw new AppException(

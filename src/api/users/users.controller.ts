@@ -1,12 +1,4 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Patch,
-  Post,
-  Query,
-} from '@nestjs/common';
+import { Body, Controller, Get, Patch, Post, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { UserResDto } from './dto/user.res.dto';
@@ -14,14 +6,14 @@ import { UserStatsResDto } from './dto/user-stats.res.dto';
 import { GetUsersDto } from './dto/get-users.dto';
 import { ApiAuth } from '../../decorators/http.decorators';
 import { CurrentUser } from '../../decorators/user.decorator';
-import { Roles } from '../../decorators/roles.decorator';
-import { Role } from '../../constants/role.constant';
+import { Permissions } from '../../decorators/permissions.decorator';
+import { Permission } from '../../constants/permission.constant';
 import { CreateUserDto } from './dto/create-user.dto';
 import { JwtPayloadType } from '../auth/types/jwt-payload.type';
 import { OffsetPaginatedDto } from '../../common/offset-pagination/paginated.dto';
 import { UUIDParam } from '../../decorators/param.decorators';
-import { ToggleUserLockReqDto } from './dto/toggle-user-lock.req.dto';
 import { UpdateCurrentUserReqDto } from './dto/update-current-user.req.dto';
+import { UpdateUserReqDto } from './dto/update-user.req.dto';
 
 @ApiTags('users')
 @Controller({
@@ -37,7 +29,7 @@ export class UsersController {
     summary: 'Lấy thông tin cá nhân',
   })
   getMe(@CurrentUser() payload: JwtPayloadType): Promise<UserResDto> {
-    return this.usersService.findOne(payload.userId);
+    return this.usersService.getUserById(payload.userId);
   }
 
   @Patch('me')
@@ -53,7 +45,7 @@ export class UsersController {
   }
 
   @Get()
-  @Roles(Role.ADMIN)
+  @Permissions(Permission.USERS_READ)
   @ApiAuth({
     type: UserResDto,
     summary: 'Lấy danh sách người dùng',
@@ -67,7 +59,7 @@ export class UsersController {
   }
 
   @Get('stats')
-  @Roles(Role.ADMIN)
+  @Permissions(Permission.USERS_READ)
   @ApiAuth({
     type: UserStatsResDto,
     summary: 'Lấy thống kê người dùng',
@@ -77,48 +69,40 @@ export class UsersController {
   }
 
   @Get(':userId')
-  @Roles(Role.ADMIN)
+  @Permissions(Permission.USERS_READ)
   @ApiAuth({
     type: UserResDto,
     summary: 'Lấy chi tiết người dùng',
   })
   getUser(@UUIDParam('userId') userId: string): Promise<UserResDto> {
-    return this.usersService.findOne(userId);
+    return this.usersService.getUserById(userId);
   }
 
-  @Patch(':userId/lock')
-  @Roles(Role.ADMIN)
-  @ApiAuth({
-    summary: 'Khóa/Mở khóa tài khoản',
-  })
-  toggleLock(
-    @UUIDParam('userId') userId: string,
-    @Body() reqDto: ToggleUserLockReqDto,
-  ): Promise<void> {
-    return this.usersService.toggleLock(userId, reqDto);
-  }
-
-  @Patch(':userId/verify-teacher')
-  @Roles(Role.ADMIN)
+  @Patch(':userId')
+  @Permissions(Permission.USERS_MANAGE)
   @ApiAuth({
     type: UserResDto,
-    summary: 'Xác thực tài khoản giáo viên',
+    summary: 'Cập nhật người dùng',
   })
-  verifyTeacher(@UUIDParam('userId') userId: string): Promise<UserResDto> {
-    return this.usersService.verifyTeacher(userId);
+  updateUser(
+    @UUIDParam('userId') userId: string,
+    @Body() reqDto: UpdateUserReqDto,
+  ): Promise<UserResDto> {
+    return this.usersService.update(userId, reqDto);
   }
 
-  @Delete(':userId')
-  @Roles(Role.ADMIN)
+  @Patch(':userId/toggle-lock')
+  @Permissions(Permission.USERS_MANAGE)
   @ApiAuth({
-    summary: 'Xóa người dùng',
+    type: UserResDto,
+    summary: 'Đảo trạng thái khóa tài khoản',
   })
-  delete(@UUIDParam('userId') userId: string): Promise<void> {
-    return this.usersService.delete(userId);
+  toggleLock(@UUIDParam('userId') userId: string): Promise<UserResDto> {
+    return this.usersService.toggleLock(userId);
   }
 
   @Post()
-  @Roles(Role.ADMIN)
+  @Permissions(Permission.USERS_MANAGE)
   @ApiAuth({
     type: UserResDto,
     summary: 'Tạo tài khoản người dùng (Admin)',
