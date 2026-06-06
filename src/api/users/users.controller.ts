@@ -40,7 +40,7 @@ export class UsersController {
     @CurrentUser() payload: JwtPayloadType,
     @Body() reqDto: UpdateUserReqDto,
   ): Promise<UserResDto> {
-    return this.usersService.updateCurrentUser(payload.userId, reqDto);
+    return this.usersService.update(payload.userId, reqDto);
   }
 
   @Get()

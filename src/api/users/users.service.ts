@@ -108,19 +108,6 @@ export class UsersService {
     return plainToInstance(UserResDto, user);
   }
 
-  async updateCurrentUser(
-    userId: string,
-    reqDto: UpdateUserReqDto,
-  ): Promise<UserResDto> {
-    return this.update(userId, {
-      fullName: reqDto.fullName,
-      phone: reqDto.phone,
-      location: reqDto.location,
-      bio: reqDto.bio,
-      avatarUrl: reqDto.avatarUrl,
-    });
-  }
-
   async update(userId: string, reqDto: UpdateUserReqDto): Promise<UserResDto> {
     await this.ensureUserExists(userId);
 
