@@ -12,7 +12,7 @@ import { ROLES_KEY } from '../decorators/roles.decorator';
 import {
   Permission,
   getPermissionCodesByRole,
-  type PermissionCode,
+  type PermissionType,
 } from '../constants/permission.constant';
 import { PERMISSIONS_KEY } from '../decorators/permissions.decorator';
 
@@ -22,7 +22,7 @@ export class RolesGuard implements CanActivate {
 
   canActivate(context: ExecutionContext): boolean {
     const requiredPermissions = this.reflector.getAllAndOverride<
-      PermissionCode[]
+      PermissionType[]
     >(PERMISSIONS_KEY, [context.getHandler(), context.getClass()]);
     const requiredRoles = this.reflector.getAllAndOverride<UserRole[]>(ROLES_KEY, [
       context.getHandler(),

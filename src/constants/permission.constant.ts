@@ -1,5 +1,18 @@
 import { UserRole } from './role.constant';
 
+export const ALL_PERMISSIONS = [
+  'system:manage',
+  'users:read',
+  'users:manage',
+  'courses:read',
+  'courses:manage',
+  'classes:read',
+  'classes:manage',
+  'files:upload',
+] as const;
+
+export type PermissionType = (typeof ALL_PERMISSIONS)[number];
+
 export const Permission = {
   SYSTEM_MANAGE: 'system:manage',
   USERS_READ: 'users:read',
@@ -9,9 +22,9 @@ export const Permission = {
   CLASSES_READ: 'classes:read',
   CLASSES_MANAGE: 'classes:manage',
   FILES_UPLOAD: 'files:upload',
-} as const;
+} as const satisfies Record<string, PermissionType>;
 
-export type PermissionCode = (typeof Permission)[keyof typeof Permission];
+export type PermissionCode = PermissionType;
 
 export const ROLE_PERMISSIONS: Record<UserRole, readonly PermissionCode[]> = {
   [UserRole.ADMIN]: [
