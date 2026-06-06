@@ -116,6 +116,22 @@ export class UpdateUserReqDto {
 }
 ```
 
+## Quy tắc tránh lặp lỗi khi chạy lệnh
+
+Sau khi xem lại lịch sử lệnh gần nhất, các lỗi dễ lặp gồm gõ sai script, chạy nhầm script giữa frontend/backend, xóa dependency quá mạnh tay, cài skill lặp và thao tác vào file cấu hình nhạy cảm. Khi AI hoặc developer chạy lệnh, cần áp dụng các rule sau:
+
+- Trước khi chạy script npm/pnpm, đọc `package.json` hoặc dùng `pnpm run` để xác nhận tên script tồn tại.
+- Không đoán script như `pnpm run dev`, `pnpm rundev` hoặc `pnpm run starT:dev`; chỉ chạy script có trong `package.json`.
+- Với backend NestJS, ưu tiên `pnpm run start:dev` khi cần chạy server và `pnpm run build` khi cần kiểm tra type/build.
+- Không dùng `rm -rf node_modules`, `rm -rf .next` hoặc xóa lockfile nếu chưa xác định đúng project, đúng lỗi và đúng hậu quả.
+- Không xóa `pnpm-lock.yaml` chỉ để sửa lỗi cài đặt; trước hết thử `pnpm i`, kiểm log lỗi, rồi mới quyết định bước mạnh hơn.
+- Không đọc hoặc in nội dung file nhạy cảm như `~/.codex/auth.json` nếu không cần thiết cho task hiện tại.
+- Không di chuyển file config như `~/.codex/config.toml` nếu chưa có bản backup rõ ràng và lý do cụ thể.
+- Không cài lại cùng một skill/package nhiều lần; kiểm tra trạng thái hiện có trước.
+- Khi lệnh seed dùng enum/schema mới, chạy `pnpm db:migrate` trước rồi mới chạy seed.
+- Khi seed có thao tác xóa dữ liệu, giới hạn phạm vi xóa theo danh sách seed cụ thể, không xóa toàn bộ bảng trừ khi user yêu cầu rõ.
+- Sau khi lệnh fail, đọc lỗi gốc trước khi chạy lệnh khác; không thử nhiều biến thể lệnh liên tiếp theo kiểu đoán.
+
 ## Ưu điểm
 
 ### Tốc độ triển khai nhanh
