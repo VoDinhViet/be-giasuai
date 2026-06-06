@@ -69,7 +69,7 @@ export class UsersService {
         ? asc(users.createdAt)
         : desc(users.createdAt);
 
-    const [userRows, [{ total }]] = await Promise.all([
+    const [entities, [{ total }]] = await Promise.all([
       this.db.query.users.findMany({
         where,
         orderBy,
@@ -88,7 +88,7 @@ export class UsersService {
     return new OffsetPaginatedDto(
       plainToInstance(
         UserResDto,
-        userRows.map((user) => ({
+        entities.map((user) => ({
           permissionCodes: getPermissionCodesByRole(user.role),
           ...user,
         })),
