@@ -101,7 +101,28 @@ export class UsersService {
     ]);
 
     return new OffsetPaginatedDto(
-      userRows.map((user) => this.toUserResDto(user)),
+      plainToInstance(
+        UserResDto,
+        userRows.map((user) => ({
+          id: user.id,
+          email: user.email,
+          username: user.username,
+          fullName: user.fullName,
+          role: user.role,
+          permissionCodes: getPermissionCodesByRole(user.role),
+          isLocked: user.isLocked,
+          createdAt: user.createdAt,
+          profile: {
+            userId: user.profileUserId,
+            phone: user.profilePhone,
+            location: user.profileLocation,
+            bio: user.profileBio,
+            avatarUrl: user.profileAvatarUrl,
+            createdAt: user.profileCreatedAt,
+            updatedAt: user.profileUpdatedAt,
+          },
+        })),
+      ),
       new OffsetPaginationDto(total, pageOptions),
     );
   }
@@ -122,21 +143,24 @@ export class UsersService {
       );
     }
 
-    return this.toUserResDto({
+    return plainToInstance(UserResDto, {
       id: user.id,
       email: user.email,
       username: user.username,
       fullName: user.fullName,
       role: user.role,
+      permissionCodes: getPermissionCodesByRole(user.role),
       isLocked: user.isLocked,
       createdAt: user.createdAt,
-      profileUserId: user.profile.userId,
-      profilePhone: user.profile.phone,
-      profileLocation: user.profile.location,
-      profileBio: user.profile.bio,
-      profileAvatarUrl: user.profile.avatarUrl,
-      profileCreatedAt: user.profile.createdAt,
-      profileUpdatedAt: user.profile.updatedAt,
+      profile: {
+        userId: user.profile.userId,
+        phone: user.profile.phone,
+        location: user.profile.location,
+        bio: user.profile.bio,
+        avatarUrl: user.profile.avatarUrl,
+        createdAt: user.profile.createdAt,
+        updatedAt: user.profile.updatedAt,
+      },
     });
   }
 
@@ -396,40 +420,4 @@ export class UsersService {
     }
   }
 
-  private toUserResDto(user: {
-    id: string;
-    email: string;
-    username: string;
-    fullName: string;
-    role: string;
-    isLocked: boolean;
-    createdAt: Date;
-    profileUserId: string;
-    profilePhone: string | null;
-    profileLocation: string | null;
-    profileBio: string | null;
-    profileAvatarUrl: string | null;
-    profileCreatedAt: Date;
-    profileUpdatedAt: Date;
-  }): UserResDto {
-    return plainToInstance(UserResDto, {
-      id: user.id,
-      email: user.email,
-      username: user.username,
-      fullName: user.fullName,
-      role: user.role,
-      permissionCodes: getPermissionCodesByRole(user.role),
-      isLocked: user.isLocked,
-      createdAt: user.createdAt,
-      profile: {
-        userId: user.profileUserId,
-        phone: user.profilePhone,
-        location: user.profileLocation,
-        bio: user.profileBio,
-        avatarUrl: user.profileAvatarUrl,
-        createdAt: user.profileCreatedAt,
-        updatedAt: user.profileUpdatedAt,
-      },
-    });
-  }
 }
