@@ -70,33 +70,18 @@ export class UsersService {
         : desc(users.createdAt);
 
     const [userRows, [{ total }]] = await Promise.all([
-      this.db
-        .select({
-          id: users.id,
-          email: users.email,
-          username: users.username,
-          fullName: users.fullName,
-          role: users.role,
-          isLocked: users.isLocked,
-          createdAt: users.createdAt,
-          profileUserId: userProfiles.userId,
-          profilePhone: userProfiles.phone,
-          profileLocation: userProfiles.location,
-          profileBio: userProfiles.bio,
-          profileAvatarUrl: userProfiles.avatarUrl,
-          profileCreatedAt: userProfiles.createdAt,
-          profileUpdatedAt: userProfiles.updatedAt,
-        })
-        .from(users)
-        .innerJoin(userProfiles, eq(userProfiles.userId, users.id))
-        .where(where)
-        .orderBy(orderBy)
-        .limit(pageOptions.limit)
-        .offset(pageOptions.offset),
+      this.db.query.users.findMany({
+        where,
+        orderBy,
+        limit: pageOptions.limit,
+        offset: pageOptions.offset,
+        with: {
+          profile: true,
+        },
+      }),
       this.db
         .select({ total: count() })
         .from(users)
-        .innerJoin(userProfiles, eq(userProfiles.userId, users.id))
         .where(where),
     ]);
 
@@ -104,23 +89,8 @@ export class UsersService {
       plainToInstance(
         UserResDto,
         userRows.map((user) => ({
-          id: user.id,
-          email: user.email,
-          username: user.username,
-          fullName: user.fullName,
-          role: user.role,
           permissionCodes: getPermissionCodesByRole(user.role),
-          isLocked: user.isLocked,
-          createdAt: user.createdAt,
-          profile: {
-            userId: user.profileUserId,
-            phone: user.profilePhone,
-            location: user.profileLocation,
-            bio: user.profileBio,
-            avatarUrl: user.profileAvatarUrl,
-            createdAt: user.profileCreatedAt,
-            updatedAt: user.profileUpdatedAt,
-          },
+          ...user,
         })),
       ),
       new OffsetPaginationDto(total, pageOptions),
@@ -144,23 +114,8 @@ export class UsersService {
     }
 
     return plainToInstance(UserResDto, {
-      id: user.id,
-      email: user.email,
-      username: user.username,
-      fullName: user.fullName,
-      role: user.role,
       permissionCodes: getPermissionCodesByRole(user.role),
-      isLocked: user.isLocked,
-      createdAt: user.createdAt,
-      profile: {
-        userId: user.profile.userId,
-        phone: user.profile.phone,
-        location: user.profile.location,
-        bio: user.profile.bio,
-        avatarUrl: user.profile.avatarUrl,
-        createdAt: user.profile.createdAt,
-        updatedAt: user.profile.updatedAt,
-      },
+      ...user,
     });
   }
 
