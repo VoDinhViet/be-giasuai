@@ -29,7 +29,6 @@ import { OrderBy } from '../../constants/app.constant';
 import { UserStatsResDto } from './dto/user-stats.res.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { Role } from '../../constants/role.constant';
-import { UpdateCurrentUserReqDto } from './dto/update-current-user.req.dto';
 import { UpdateUserReqDto } from './dto/update-user.req.dto';
 
 @Injectable()
@@ -111,54 +110,15 @@ export class UsersService {
 
   async updateCurrentUser(
     userId: string,
-    reqDto: UpdateCurrentUserReqDto,
+    reqDto: UpdateUserReqDto,
   ): Promise<UserResDto> {
-    const hasProfileUpdate =
-      reqDto.phone !== undefined ||
-      reqDto.location !== undefined ||
-      reqDto.bio !== undefined ||
-      reqDto.avatarUrl !== undefined;
-
-    if (reqDto.fullName === undefined && !hasProfileUpdate) {
-      return this.getUserById(userId);
-    }
-
-    await this.ensureUserExists(userId);
-
-    await this.db.transaction(async (tx) => {
-      if (reqDto.fullName !== undefined) {
-        await tx
-          .update(users)
-          .set({
-            fullName: reqDto.fullName,
-          })
-          .where(eq(users.id, userId));
-      }
-
-      if (hasProfileUpdate) {
-        await tx
-          .insert(userProfiles)
-          .values({
-            userId,
-            phone: reqDto.phone,
-            location: reqDto.location,
-            bio: reqDto.bio,
-            avatarUrl: reqDto.avatarUrl,
-          })
-          .onConflictDoUpdate({
-            target: userProfiles.userId,
-            set: {
-              phone: reqDto.phone,
-              location: reqDto.location,
-              bio: reqDto.bio,
-              avatarUrl: reqDto.avatarUrl,
-              updatedAt: new Date(),
-            },
-          });
-      }
+    return this.update(userId, {
+      fullName: reqDto.fullName,
+      phone: reqDto.phone,
+      location: reqDto.location,
+      bio: reqDto.bio,
+      avatarUrl: reqDto.avatarUrl,
     });
-
-    return this.getUserById(userId);
   }
 
   async update(userId: string, reqDto: UpdateUserReqDto): Promise<UserResDto> {
@@ -169,6 +129,18 @@ export class UsersService {
       reqDto.location !== undefined ||
       reqDto.bio !== undefined ||
       reqDto.avatarUrl !== undefined;
+
+    const hasAccountUpdate =
+      reqDto.email !== undefined ||
+      reqDto.username !== undefined ||
+      reqDto.fullName !== undefined ||
+      reqDto.password !== undefined ||
+      reqDto.role !== undefined ||
+      reqDto.isLocked !== undefined;
+
+    if (!hasAccountUpdate && !hasProfileUpdate) {
+      return this.getUserById(userId);
+    }
 
     if (reqDto.email || reqDto.username) {
       const duplicatedUser = await this.db.query.users.findFirst({
@@ -198,17 +170,19 @@ export class UsersService {
       : undefined;
 
     await this.db.transaction(async (tx) => {
-      await tx
-        .update(users)
-        .set({
-          email: reqDto.email,
-          username: reqDto.username,
-          fullName: reqDto.fullName,
-          password,
-          role: reqDto.role,
-          isLocked: reqDto.isLocked,
-        })
-        .where(eq(users.id, userId));
+      if (hasAccountUpdate) {
+        await tx
+          .update(users)
+          .set({
+            email: reqDto.email,
+            username: reqDto.username,
+            fullName: reqDto.fullName,
+            password,
+            role: reqDto.role,
+            isLocked: reqDto.isLocked,
+          })
+          .where(eq(users.id, userId));
+      }
 
       if (hasProfileUpdate) {
         await tx

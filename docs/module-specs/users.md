@@ -35,7 +35,7 @@ Errors:
 
 Request DTO:
 
-- `UpdateCurrentUserReqDto`
+- `UpdateUserReqDto`
 
 Response DTO:
 

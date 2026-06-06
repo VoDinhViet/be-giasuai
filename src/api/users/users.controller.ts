@@ -12,7 +12,6 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { JwtPayloadType } from '../auth/types/jwt-payload.type';
 import { OffsetPaginatedDto } from '../../common/offset-pagination/paginated.dto';
 import { UUIDParam } from '../../decorators/param.decorators';
-import { UpdateCurrentUserReqDto } from './dto/update-current-user.req.dto';
 import { UpdateUserReqDto } from './dto/update-user.req.dto';
 
 @ApiTags('users')
@@ -39,7 +38,7 @@ export class UsersController {
   })
   updateMe(
     @CurrentUser() payload: JwtPayloadType,
-    @Body() reqDto: UpdateCurrentUserReqDto,
+    @Body() reqDto: UpdateUserReqDto,
   ): Promise<UserResDto> {
     return this.usersService.updateCurrentUser(payload.userId, reqDto);
   }
