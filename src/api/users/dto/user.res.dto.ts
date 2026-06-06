@@ -9,28 +9,28 @@ import {
 export class UserResDto {
   @UUIDField({ description: 'ID người dùng' })
   @Expose()
-  id: string;
+  id!: string;
 
   @StringField({ description: 'Email' })
   @Expose()
-  email: string;
+  email!: string;
 
   @StringField({ description: 'Username' })
   @Expose()
-  username: string;
+  username!: string;
 
   @StringField({ description: 'Họ tên' })
   @Expose()
-  fullName: string;
+  fullName!: string;
 
   @StringField({ description: 'Vai trò' })
   @Expose()
-  role: string;
+  role!: string;
 
   @BooleanField({ description: 'Trạng thái khóa' })
   @Expose()
-  isLocked: boolean;
+  isLocked!: boolean;
 
   @Expose()
-  createdAt: Date;
+  createdAt!: Date;
 }
