@@ -38,6 +38,11 @@ export class UsersService {
     private readonly db: Database,
   ) {}
 
+  /**
+   * Gets non-admin users by filter and pagination options.
+   * @param pageOptions Search keyword, role, lock status, sort, limit, and offset.
+   * @returns Paginated users and pagination metadata.
+   */
   async getUsers(
     pageOptions: GetUsersDto,
   ): Promise<OffsetPaginatedDto<UserResDto>> {
@@ -89,6 +94,12 @@ export class UsersService {
     );
   }
 
+  /**
+   * Gets one user with the required profile relation.
+   * @param userId User id to find.
+   * @returns User detail DTO.
+   * @throws AppException when the user or profile does not exist.
+   */
   async getUserById(userId: string): Promise<UserResDto> {
     const user = await this.db.query.users.findFirst({
       where: eq(users.id, userId),
@@ -108,6 +119,13 @@ export class UsersService {
     return plainToInstance(UserResDto, user);
   }
 
+  /**
+   * Updates one user's account and profile fields.
+   * @param userId User id to update.
+   * @param reqDto Account/profile fields from the request body.
+   * @returns Updated user detail DTO.
+   * @throws AppException when the user does not exist or email/username is duplicated.
+   */
   async update(userId: string, reqDto: UpdateUserReqDto): Promise<UserResDto> {
     await this.ensureUserExists(userId);
 
@@ -202,10 +220,8 @@ export class UsersService {
   }
 
   /**
-   * Lấy thống kê tổng quan về người dùng.
-   * Bao gồm: tổng số người dùng, người dùng mới trong ngày, người dùng hoạt động (24h qua) và người dùng bị khóa.
-   *
-   * @returns Thống kê người dùng (tổng số, mới, hoạt động, bị khóa).
+   * Gets aggregate user statistics for dashboard usage.
+   * @returns Total, new today, active in last 24 hours, and locked user counts.
    */
   async getStats(): Promise<UserStatsResDto> {
     const today = new Date();
@@ -238,6 +254,12 @@ export class UsersService {
     };
   }
 
+  /**
+   * Toggles one user's locked status and clears sessions when locking.
+   * @param userId User id to toggle.
+   * @returns Updated user detail DTO.
+   * @throws AppException when the user does not exist.
+   */
   async toggleLock(userId: string): Promise<UserResDto> {
     const user = await this.db.query.users.findFirst({
       where: eq(users.id, userId),
@@ -270,6 +292,12 @@ export class UsersService {
     return this.getUserById(userId);
   }
 
+  /**
+   * Creates one user account and its required profile row.
+   * @param dto Email, username, password, full name, and role for the new user.
+   * @returns Created user detail DTO.
+   * @throws AppException when email or username already exists.
+   */
   async create(dto: CreateUserDto): Promise<UserResDto> {
     const existingUser = await this.db.query.users.findFirst({
       where: or(eq(users.email, dto.email), eq(users.username, dto.username)),
@@ -309,6 +337,12 @@ export class UsersService {
     return this.getUserById(createdUser.id);
   }
 
+  /**
+   * Checks that a user exists before mutating data.
+   * @param userId User id to check.
+   * @returns Void when the user exists.
+   * @throws AppException when the user does not exist.
+   */
   private async ensureUserExists(userId: string): Promise<void> {
     const existingUser = await this.db.query.users.findFirst({
       where: eq(users.id, userId),
