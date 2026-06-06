@@ -129,24 +129,6 @@ export class UsersService {
   async update(userId: string, reqDto: UpdateUserReqDto): Promise<UserResDto> {
     await this.ensureUserExists(userId);
 
-    const hasProfileUpdate =
-      reqDto.phone !== undefined ||
-      reqDto.location !== undefined ||
-      reqDto.bio !== undefined ||
-      reqDto.avatarUrl !== undefined;
-
-    const hasAccountUpdate =
-      reqDto.email !== undefined ||
-      reqDto.username !== undefined ||
-      reqDto.fullName !== undefined ||
-      reqDto.password !== undefined ||
-      reqDto.role !== undefined ||
-      reqDto.isLocked !== undefined;
-
-    if (!hasAccountUpdate && !hasProfileUpdate) {
-      return this.getUserById(userId);
-    }
-
     if (reqDto.email || reqDto.username) {
       const duplicatedUser = await this.db.query.users.findFirst({
         where: and(
@@ -175,41 +157,37 @@ export class UsersService {
       : undefined;
 
     await this.db.transaction(async (tx) => {
-      if (hasAccountUpdate) {
-        await tx
-          .update(users)
-          .set({
-            email: reqDto.email,
-            username: reqDto.username,
-            fullName: reqDto.fullName,
-            password,
-            role: reqDto.role,
-            isLocked: reqDto.isLocked,
-          })
-          .where(eq(users.id, userId));
-      }
+      await tx
+        .update(users)
+        .set({
+          email: reqDto.email,
+          username: reqDto.username,
+          fullName: reqDto.fullName,
+          password,
+          role: reqDto.role,
+          isLocked: reqDto.isLocked,
+        })
+        .where(eq(users.id, userId));
 
-      if (hasProfileUpdate) {
-        await tx
-          .insert(userProfiles)
-          .values({
-            userId,
+      await tx
+        .insert(userProfiles)
+        .values({
+          userId,
+          phone: reqDto.phone,
+          location: reqDto.location,
+          bio: reqDto.bio,
+          avatarUrl: reqDto.avatarUrl,
+        })
+        .onConflictDoUpdate({
+          target: userProfiles.userId,
+          set: {
             phone: reqDto.phone,
             location: reqDto.location,
             bio: reqDto.bio,
             avatarUrl: reqDto.avatarUrl,
-          })
-          .onConflictDoUpdate({
-            target: userProfiles.userId,
-            set: {
-              phone: reqDto.phone,
-              location: reqDto.location,
-              bio: reqDto.bio,
-              avatarUrl: reqDto.avatarUrl,
-              updatedAt: new Date(),
-            },
-          });
-      }
+            updatedAt: new Date(),
+          },
+        });
 
       if (reqDto.isLocked) {
         await tx.delete(sessions).where(eq(sessions.userId, userId));
