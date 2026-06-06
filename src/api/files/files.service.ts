@@ -12,8 +12,8 @@ export class FilesService {
     if (!file) {
       throw new AppException(
         ErrorCode.E105,
-        'File not found',
         HttpStatus.BAD_REQUEST,
+        'File not found',
       );
     }
 

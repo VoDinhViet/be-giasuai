@@ -6,11 +6,7 @@ import { ErrorCode } from '../constants/error-code.constant';
  * specific HTTP status, and message.
  */
 export class AppException extends HttpException {
-  constructor(
-    errorCode: ErrorCode,
-    message: string,
-    status: HttpStatus = HttpStatus.BAD_REQUEST,
-  ) {
+  constructor(errorCode: ErrorCode, status: HttpStatus, message: string) {
     super({ errorCode, message }, status);
   }
 }

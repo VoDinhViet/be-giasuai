@@ -155,8 +155,8 @@ export class ClassesService {
     if (duplicatedClass) {
       throw new AppException(
         ErrorCode.E001,
-        'Class code already exists',
         HttpStatus.CONFLICT,
+        'Class code already exists',
       );
     }
 
@@ -532,8 +532,8 @@ export class ClassesService {
     if (!courseRow) {
       throw new AppException(
         ErrorCode.E002,
-        'Course not found',
         HttpStatus.NOT_FOUND,
+        'Course not found',
       );
     }
 
@@ -555,8 +555,8 @@ export class ClassesService {
       if (!insertedClassCourse) {
         throw new AppException(
           ErrorCode.E001,
-          'Class course already exists',
           HttpStatus.CONFLICT,
+          'Class course already exists',
         );
       }
     });
@@ -606,7 +606,10 @@ export class ClassesService {
   ): Promise<ClassEnrollmentResDto> {
     const classRow = await this.getClassBaseRow(classCode);
     const learner = await this.db.query.users.findFirst({
-      where: and(eq(users.email, reqDto.email), eq(users.role, UserRole.LEARNER)),
+      where: and(
+        eq(users.email, reqDto.email),
+        eq(users.role, UserRole.LEARNER),
+      ),
       columns: {
         id: true,
       },
@@ -615,8 +618,8 @@ export class ClassesService {
     if (!learner) {
       throw new AppException(
         ErrorCode.E002,
-        'Learner not found',
         HttpStatus.NOT_FOUND,
+        'Learner not found',
       );
     }
 
@@ -637,8 +640,8 @@ export class ClassesService {
     ) {
       throw new AppException(
         ErrorCode.E001,
-        'Learner already joined this class',
         HttpStatus.CONFLICT,
+        'Learner already joined this class',
       );
     }
 
@@ -706,8 +709,8 @@ export class ClassesService {
     if (!updatedEnrollment) {
       throw new AppException(
         ErrorCode.E002,
-        'Class enrollment not found',
         HttpStatus.NOT_FOUND,
+        'Class enrollment not found',
       );
     }
 
@@ -760,8 +763,8 @@ export class ClassesService {
     if (!classRow) {
       throw new AppException(
         ErrorCode.E002,
-        'Class not found',
         HttpStatus.NOT_FOUND,
+        'Class not found',
       );
     }
 
@@ -844,8 +847,8 @@ export class ClassesService {
     if (!enrollmentRow) {
       throw new AppException(
         ErrorCode.E002,
-        'Class enrollment not found',
         HttpStatus.NOT_FOUND,
+        'Class enrollment not found',
       );
     }
 
@@ -883,8 +886,8 @@ export class ClassesService {
     if (!courseRow) {
       throw new AppException(
         ErrorCode.E002,
-        'Class course not found',
         HttpStatus.NOT_FOUND,
+        'Class course not found',
       );
     }
 

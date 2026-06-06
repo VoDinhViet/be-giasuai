@@ -124,8 +124,8 @@ export class AuthService {
     if (!user) {
       throw new AppException(
         ErrorCode.E004,
-        'Invalid email or password',
         HttpStatus.UNAUTHORIZED,
+        'Invalid email or password',
       );
     }
 
@@ -134,16 +134,16 @@ export class AuthService {
     if (!isPasswordValid) {
       throw new AppException(
         ErrorCode.E004,
-        'Invalid email or password',
         HttpStatus.UNAUTHORIZED,
+        'Invalid email or password',
       );
     }
 
     if (user.isLocked) {
       throw new AppException(
         ErrorCode.E005,
-        'Account is locked or pending verification',
         HttpStatus.UNAUTHORIZED,
+        'Account is locked or pending verification',
       );
     }
 
@@ -177,8 +177,8 @@ export class AuthService {
     if (dto.role === UserRole.ADMIN) {
       throw new AppException(
         ErrorCode.E007,
-        'Public admin registration is not allowed',
         HttpStatus.FORBIDDEN,
+        'Public admin registration is not allowed',
       );
     }
 
@@ -192,6 +192,7 @@ export class AuthService {
     if (existingUser) {
       throw new AppException(
         ErrorCode.E001,
+        HttpStatus.BAD_REQUEST,
         'User with this email or username already exists',
       );
     }
@@ -238,8 +239,8 @@ export class AuthService {
     if (!user) {
       throw new AppException(
         ErrorCode.E002,
-        'User not found',
         HttpStatus.NOT_FOUND,
+        'User not found',
       );
     }
 
@@ -264,8 +265,8 @@ export class AuthService {
     if (!user) {
       throw new AppException(
         ErrorCode.E002,
-        'User not found',
         HttpStatus.NOT_FOUND,
+        'User not found',
       );
     }
 
@@ -331,8 +332,8 @@ export class AuthService {
     if (!user) {
       throw new AppException(
         ErrorCode.E006,
-        'Invalid or expired OTP',
         HttpStatus.BAD_REQUEST,
+        'Invalid or expired OTP',
       );
     }
 
@@ -367,8 +368,8 @@ export class AuthService {
     } catch {
       throw new AppException(
         ErrorCode.E008,
-        'Invalid refresh token',
         HttpStatus.UNAUTHORIZED,
+        'Invalid refresh token',
       );
     }
 
@@ -393,8 +394,8 @@ export class AuthService {
     if (!session || session.hash !== payload.hash || session.user.isLocked) {
       throw new AppException(
         ErrorCode.E008,
-        'Invalid refresh token',
         HttpStatus.UNAUTHORIZED,
+        'Invalid refresh token',
       );
     }
 
@@ -507,8 +508,8 @@ export class AuthService {
     if (isOnCooldown) {
       throw new AppException(
         ErrorCode.V003,
-        'Please wait before requesting another OTP',
         HttpStatus.TOO_MANY_REQUESTS,
+        'Please wait before requesting another OTP',
       );
     }
   }
@@ -547,8 +548,8 @@ export class AuthService {
     if (!this.isOtpCacheValue(cachedOtp)) {
       throw new AppException(
         ErrorCode.E006,
-        'Invalid or expired OTP',
         HttpStatus.BAD_REQUEST,
+        'Invalid or expired OTP',
       );
     }
 
@@ -557,8 +558,8 @@ export class AuthService {
     if (!isOtpValid) {
       throw new AppException(
         ErrorCode.E006,
-        'Invalid or expired OTP',
         HttpStatus.BAD_REQUEST,
+        'Invalid or expired OTP',
       );
     }
   }

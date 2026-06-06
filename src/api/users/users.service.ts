@@ -82,10 +82,7 @@ export class UsersService {
           profile: true,
         },
       }),
-      this.db
-        .select({ total: count() })
-        .from(users)
-        .where(where),
+      this.db.select({ total: count() }).from(users).where(where),
     ]);
 
     return new OffsetPaginatedDto(
@@ -111,8 +108,8 @@ export class UsersService {
     if (!user || !user.profile) {
       throw new AppException(
         ErrorCode.E002,
-        'User not found',
         HttpStatus.NOT_FOUND,
+        'User not found',
       );
     }
 
@@ -146,8 +143,8 @@ export class UsersService {
       if (duplicatedUser) {
         throw new AppException(
           ErrorCode.E001,
-          'User with this email or username already exists',
           HttpStatus.CONFLICT,
+          'User with this email or username already exists',
         );
       }
     }
@@ -250,8 +247,8 @@ export class UsersService {
     if (!user) {
       throw new AppException(
         ErrorCode.E002,
-        'User not found',
         HttpStatus.NOT_FOUND,
+        'User not found',
       );
     }
 
@@ -287,8 +284,8 @@ export class UsersService {
     if (existingUser) {
       throw new AppException(
         ErrorCode.E001,
-        'User with this email or username already exists',
         HttpStatus.CONFLICT,
+        'User with this email or username already exists',
       );
     }
 
@@ -332,10 +329,9 @@ export class UsersService {
     if (!existingUser) {
       throw new AppException(
         ErrorCode.E002,
-        'User not found',
         HttpStatus.NOT_FOUND,
+        'User not found',
       );
     }
   }
-
 }
