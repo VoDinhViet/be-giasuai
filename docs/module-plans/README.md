@@ -11,13 +11,13 @@ Sheet: Trang tính1
 
 ## Cach doc
 
-Quy dinh vai tro tung nhom markdown xem tai `docs/documentation-structure.md`.
+Quy định vai trò từng nhóm Markdown xem tại `docs/documentation-structure.md`.
 
-- Moi folder module co 3 file chinh: `description.md`, `plan.md`, `progress.md`.
-- `description.md` mo ta nghiep vu, vai tro va pham vi so huu cua module.
-- `plan.md` la ke hoach backend-ready o muc domain, API module, data concept, RBAC va verification.
-- `progress.md` ghi trang thai theo tung chuc nang tu Excel va bang chung hien co trong code.
-- Module co the co file bo sung nhu `usage.md` khi can thong ke luong su dung rieng.
+- Mỗi folder module có 3 file chính: `description.md`, `plan.md`, `progress.md`.
+- `description.md` mô tả nghiệp vụ, vai trò và phạm vi sở hữu của module.
+- `plan.md` là kế hoạch backend-ready ở mức domain, API module, data concept, RBAC và verification.
+- `progress.md` ghi trạng thái theo từng chức năng từ Excel và bằng chứng hiện có trong code.
+- Module có thể có file bổ sung như `usage.md` khi cần thống kê luồng sử dụng riêng.
 
 ## Trang thai
 

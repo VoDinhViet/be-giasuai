@@ -1,87 +1,87 @@
-# Thong ke cach su dung AI
+# Thống kê cách sử dụng AI
 
-## Muc dich
+## Mục đích
 
-Tai lieu nay gom lai cac cach he thong Gia Su AI du kien su dung AI trong san pham, tach ro ai dung, dung de lam gi, can du lieu gi, tao ra ket qua nao va hien trang backend.
+Tài liệu này gom lại các cách hệ thống Gia Sư AI dự kiến sử dụng AI trong sản phẩm, tách rõ ai dùng, dùng để làm gì, cần dữ liệu gì, tạo ra kết quả nào và hiện trạng backend.
 
-Tinh den hien tai, backend chua co module goi AI, chua co provider/model config, chua co conversation log va chua co bang `ai_generation_logs`. Cac muc ben duoi la ban thong ke nghiep vu de trien khai sau.
+Tính đến hiện tại, backend chưa có module gọi AI, chưa có provider/model config, chưa có conversation log và chưa có bảng `ai_generation_logs`. Các mục bên dưới là bản thống kê nghiệp vụ để triển khai sau.
 
-## Tong quan theo nhom chuc nang
+## Tổng quan theo nhóm chức năng
 
-| Nhom | Nguoi dung chinh | Muc tieu | Trang thai backend |
+| Nhóm | Người dùng chính | Mục tiêu | Trạng thái backend |
 | --- | --- | --- | --- |
-| Lo trinh hoc tap AI | Student, Teacher, Admin | Sinh va dieu chinh lo trinh hoc tap ca nhan/lop. | `planned` |
-| AI Tutor | Student | Hoi dap hoc tap tong quat hoac theo ngu canh bai hoc. | `planned` |
-| AI tao bai luyen tap | Student | Tao bai tu luyen dua tren diem yeu va ket qua hoc. | `planned` |
-| AI ho tro giao an | Teacher | Goi y giao an, bai giang, cau hoi, bai tap. | `planned` |
-| AI cham diem/giai thich | Student, Teacher, Admin | Cham bai tu dong va giai thich loi sai. | `planned` trong `assessments-grading` |
-| AI gan the diem yeu | Student, Teacher | Gan weak tags tu bai lam va tien do hoc. | `planned` trong `learning-analytics` |
-| Quan tri chi phi/log AI | Admin | Theo doi lich su hoi thoai, token, chi phi, provider/model. | `planned` trong `platform-admin` |
-| Quota AI theo goi | Student, Teacher, Admin | Gioi han so lan goi AI theo package. | `planned-later` trong `service-packages` |
+| Lộ trình học tập AI | Student, Teacher, Admin | Sinh và điều chỉnh lộ trình học tập cá nhân/lớp. | `planned` |
+| AI Tutor | Student | Hỏi đáp học tập tổng quát hoặc theo ngữ cảnh bài học. | `planned` |
+| AI tạo bài luyện tập | Student | Tạo bài tự luyện dựa trên điểm yếu và kết quả học. | `planned` |
+| AI hỗ trợ giáo án | Teacher | Gợi ý giáo án, bài giảng, câu hỏi, bài tập. | `planned` |
+| AI chấm điểm/giải thích | Student, Teacher, Admin | Chấm bài tự động và giải thích lỗi sai. | `planned` trong `assessments-grading` |
+| AI gắn thẻ điểm yếu | Student, Teacher | Gắn weak tags từ bài làm và tiến độ học. | `planned` trong `learning-analytics` |
+| Quản trị chi phí/log AI | Admin | Theo dõi lịch sử hội thoại, token, chi phí, provider/model. | `planned` trong `platform-admin` |
+| Quota AI theo gói | Student, Teacher, Admin | Giới hạn số lần gọi AI theo package. | `planned-later` trong `service-packages` |
 
-## Thong ke chi tiet
+## Thống kê chi tiết
 
-| Use case | Actor | Input can co | Xu ly AI | Output tra ve | Luu DB/log | Module so huu |
+| Use case | Actor | Input cần có | Xử lý AI | Output trả về | Lưu DB/log | Module sở hữu |
 | --- | --- | --- | --- | --- | --- | --- |
-| Sinh lo trinh ca nhan sau test dau vao | Student | Ket qua placement test, level, muc tieu hoc, tien do hien tai. | Tao danh sach noi dung nen hoc theo thu tu uu tien. | Learning path ca nhan va ly do tung muc. | `learning_paths`, `learning_path_items`, `ai_generation_logs`. | `ai-personalization` |
-| Sinh lo trinh theo lop | Teacher | Lop hoc, danh sach hoc vien, course trong lop, muc tieu lop. | Tao baseline path cho ca lop. | Group learning path. | `learning_paths` owner type class/group. | `ai-personalization` |
-| Dieu chinh lo trinh ca nhan | Student | Path hien tai, item muon them/bo/doi thu tu, ly do. | Goi y tac dong hoac xac nhan thay doi. | Path version moi. | Path version, audit reason. | `ai-personalization` |
-| Teacher dieu chinh lo trinh lop | Teacher | Group path, lop phu trach, noi dung can sua. | Goi y dieu chinh theo muc tieu giang day. | Group path version moi. | Path version, teacher action log. | `ai-personalization` |
-| Khoi phuc lo trinh mac dinh | Admin | Path hien tai, baseline generated path. | Khong bat buoc goi AI; dung snapshot da luu. | Path quay ve baseline. | Baseline snapshot, admin audit. | `ai-personalization` |
-| AI Tutor general | Student | Cau hoi nguoi hoc, lich su hoi thoai ngan. | Tra loi hoc tap tong quat, khong gan voi bai cu the. | Message tra loi. | Conversation summary, message metadata, generation log. | `ai-personalization` |
-| AI Tutor theo bai hoc | Student | Cau hoi, lesson/content id, noi dung bai hoc, tien do user. | Tra loi trong pham vi bai hoc, khong dung noi dung ngoai context. | Message tra loi kem trich ngu canh noi bo neu can. | Conversation, context reference, generation log. | `ai-personalization` |
-| Tao bai tu luyen theo diem yeu | Student | Weak tags, level, lich su bai sai, content dang hoc. | Sinh cau hoi/bai tap phu hop diem yeu. | Practice set ca nhan. | Generated practice, question refs, generation log. | `ai-personalization` |
-| Goi y giao an | Teacher | Chu de, lop, course, muc tieu buoi hoc, thoi luong. | Sinh outline giao an va hoat dong day hoc. | Draft lesson plan. | Draft output, generation log. | `teacher-ai-tools` trong `ai-personalization` |
-| Goi y cau hoi/bai tap | Teacher | Noi dung bai hoc, muc tieu, do kho, dang cau hoi. | Sinh cau hoi de giao bai/kiem tra. | Draft questions. | Draft output, generation log. | `teacher-ai-tools` trong `ai-personalization` |
-| Cham diem tu luan | Student, Teacher | Bai lam, rubric, dap an mau neu co. | Cham diem theo rubric va giai thich. | Score, feedback, loi sai. | Assessment result, grading audit, generation log. | `assessments-grading` |
-| Giai thich loi sai | Student | Cau sai, dap an cua hoc sinh, dap an dung, lesson context. | Tao giai thich ngan gon va goi y hoc lai. | Feedback ca nhan. | Feedback record, weak tag signal. | `assessments-grading` |
-| Gan weak tags | System, Teacher | Ket qua lam bai, feedback, content tags. | Phan loai diem yeu theo chu de/ky nang. | Weak tags cap nhat. | Weak knowledge records. | `learning-analytics` |
-| Thong ke chi phi AI | Admin | Generation logs, token input/output, provider, model. | Khong bat buoc goi AI; aggregate logs. | Bao cao chi phi/usage. | `ai_generation_logs`, daily aggregates. | `platform-admin` |
-| Gioi han quota AI | System | User package, feature code, period, usage count. | Khong goi AI neu vuot quota. | Allow/deny AI request. | Quota usage. | `service-packages` |
+| Sinh lộ trình cá nhân sau test đầu vào | Student | Kết quả placement test, level, mục tiêu học, tiến độ hiện tại. | Tạo danh sách nội dung nên học theo thứ tự ưu tiên. | Learning path cá nhân và lý do từng mục. | `learning_paths`, `learning_path_items`, `ai_generation_logs`. | `ai-personalization` |
+| Sinh lộ trình theo lớp | Teacher | Lớp học, danh sách học viên, course trong lớp, mục tiêu lớp. | Tạo baseline path cho cả lớp. | Group learning path. | `learning_paths` owner type class/group. | `ai-personalization` |
+| Điều chỉnh lộ trình cá nhân | Student | Path hiện tại, item muốn thêm/bỏ/đổi thứ tự, lý do. | Gợi ý tác động hoặc xác nhận thay đổi. | Path version mới. | Path version, audit reason. | `ai-personalization` |
+| Teacher điều chỉnh lộ trình lớp | Teacher | Group path, lớp phụ trách, nội dung cần sửa. | Gợi ý điều chỉnh theo mục tiêu giảng dạy. | Group path version mới. | Path version, teacher action log. | `ai-personalization` |
+| Khôi phục lộ trình mặc định | Admin | Path hiện tại, baseline generated path. | Không bắt buộc gọi AI; dùng snapshot đã lưu. | Path quay về baseline. | Baseline snapshot, admin audit. | `ai-personalization` |
+| AI Tutor general | Student | Câu hỏi người học, lịch sử hội thoại ngắn. | Trả lời học tập tổng quát, không gắn với bài cụ thể. | Message trả lời. | Conversation summary, message metadata, generation log. | `ai-personalization` |
+| AI Tutor theo bài học | Student | Câu hỏi, lesson/content id, nội dung bài học, tiến độ user. | Trả lời trong phạm vi bài học, không dùng nội dung ngoài context. | Message trả lời kèm trích ngữ cảnh nội bộ nếu cần. | Conversation, context reference, generation log. | `ai-personalization` |
+| Tạo bài tự luyện theo điểm yếu | Student | Weak tags, level, lịch sử bài sai, content đang học. | Sinh câu hỏi/bài tập phù hợp điểm yếu. | Practice set cá nhân. | Generated practice, question refs, generation log. | `ai-personalization` |
+| Gợi ý giáo án | Teacher | Chủ đề, lớp, course, mục tiêu buổi học, thời lượng. | Sinh outline giáo án và hoạt động dạy học. | Draft lesson plan. | Draft output, generation log. | `teacher-ai-tools` trong `ai-personalization` |
+| Gợi ý câu hỏi/bài tập | Teacher | Nội dung bài học, mục tiêu, độ khó, dạng câu hỏi. | Sinh câu hỏi để giao bài/kiểm tra. | Draft questions. | Draft output, generation log. | `teacher-ai-tools` trong `ai-personalization` |
+| Chấm điểm tự luận | Student, Teacher | Bài làm, rubric, đáp án mẫu nếu có. | Chấm điểm theo rubric và giải thích. | Score, feedback, lỗi sai. | Assessment result, grading audit, generation log. | `assessments-grading` |
+| Giải thích lỗi sai | Student | Câu sai, đáp án của học sinh, đáp án đúng, lesson context. | Tạo giải thích ngắn gọn và gợi ý học lại. | Feedback cá nhân. | Feedback record, weak tag signal. | `assessments-grading` |
+| Gắn weak tags | System, Teacher | Kết quả làm bài, feedback, content tags. | Phân loại điểm yếu theo chủ đề/kỹ năng. | Weak tags cập nhật. | Weak knowledge records. | `learning-analytics` |
+| Thống kê chi phí AI | Admin | Generation logs, token input/output, provider, model. | Không bắt buộc gọi AI; aggregate logs. | Báo cáo chi phí/usage. | `ai_generation_logs`, daily aggregates. | `platform-admin` |
+| Giới hạn quota AI | System | User package, feature code, period, usage count. | Không gọi AI nếu vượt quota. | Allow/deny AI request. | Quota usage. | `service-packages` |
 
-## Luong goi AI chuan
+## Luồng gọi AI chuẩn
 
-1. Controller nhan request da validate va da qua RBAC.
-2. Service kiem tra owner/permission va quota neu feature da bat package.
-3. Context builder lay du lieu noi bo can thiet: user, class, course, lesson, assessment, weak tags.
-4. AI orchestration service tao prompt theo `purpose`, chon provider/model tu config.
-5. Goi provider AI va normalize output ve schema noi bo.
-6. Luu output/domain record neu can: learning path, practice, feedback, draft.
+1. Controller nhận request đã validate và đã qua RBAC.
+2. Service kiểm tra owner/permission và quota nếu feature đã bật package.
+3. Context builder lấy dữ liệu nội bộ cần thiết: user, class, course, lesson, assessment, weak tags.
+4. AI orchestration service tạo prompt theo `purpose`, chọn provider/model từ config.
+5. Gọi provider AI và normalize output về schema nội bộ.
+6. Lưu output/domain record nếu cần: learning path, practice, feedback, draft.
 7. Ghi `ai_generation_logs`: user, purpose, provider, model, token/cost metadata, context reference, output reference.
-8. Tra DTO da whitelist cho frontend.
+8. Trả DTO đã whitelist cho frontend.
 
-## Du lieu toi thieu can thiet
+## Dữ liệu tối thiểu cần thiết
 
-| Data | Dung cho | Trang thai hien tai |
+| Data | Dùng cho | Trạng thái hiện tại |
 | --- | --- | --- |
-| Authenticated user, role, lock status | Tat ca luong AI. | Da co trong `identity-access`. |
-| User profile | Ca nhan hoa output, avatar/hien thi. | Dang co trong `user-profiles`. |
-| Course/lesson content | Tutor theo bai, giao an, bai luyen tap. | Dang in-progress theo course/class docs. |
-| Assessment result | Lo trinh, weak tags, cham diem/giai thich. | `planned`. |
-| Weak tags | Bai tu luyen va canh bao hoc tap. | `planned`. |
-| AI generation log | Audit, chi phi, quota, debug output. | `planned`. |
-| Package/quota | Gioi han AI theo goi. | `planned-later`. |
+| Authenticated user, role, lock status | Tất cả luồng AI. | Đã có trong `identity-access`. |
+| User profile | Cá nhân hóa output, avatar/hiển thị. | Đang có trong `user-profiles`. |
+| Course/lesson content | Tutor theo bài, giáo án, bài luyện tập. | Đang in-progress theo course/class docs. |
+| Assessment result | Lộ trình, weak tags, chấm điểm/giải thích. | `planned`. |
+| Weak tags | Bài tự luyện và cảnh báo học tập. | `planned`. |
+| AI generation log | Audit, chi phí, quota, debug output. | `planned`. |
+| Package/quota | Giới hạn AI theo gói. | `planned-later`. |
 
-## Nguyen tac an toan
+## Nguyên tắc an toàn
 
-- Khong dua password, token, session hash, OTP hoac secret vao prompt.
-- Prompt chi gom context can thiet cho `purpose`.
-- Moi output AI dung trong hoc tap phai duoc luu kem `purpose`, model, context reference va output reference.
-- Draft cho Teacher khong tu dong publish thanh noi dung chinh neu chua co buoc duyet.
-- AI Tutor theo bai hoc khong tra loi ngoai context neu request yeu cau bam sat lesson.
-- Admin xem duoc chi phi/log tong quan, nhung khong can xem noi dung rieng tu day du neu khong co rule ro.
+- Không đưa password, token, session hash, OTP hoặc secret vào prompt.
+- Prompt chỉ gồm context cần thiết cho `purpose`.
+- Mọi output AI dùng trong học tập phải được lưu kèm `purpose`, model, context reference và output reference.
+- Draft cho Teacher không tự động publish thành nội dung chính nếu chưa có bước duyệt.
+- AI Tutor theo bài học không trả lời ngoài context nếu request yêu cầu bám sát lesson.
+- Admin xem được chi phí/log tổng quan, nhưng không cần xem nội dung riêng tư đầy đủ nếu không có rule rõ.
 
-## Thu tu trien khai de nghi
+## Thứ tự triển khai đề nghị
 
-1. Tao `ai-generation-logs` va AI orchestration service dung chung.
-2. Lam AI Tutor general vi it phu thuoc content model.
-3. Lam AI Tutor theo lesson sau khi content/lesson on dinh.
-4. Lam learning path ca nhan sau khi co placement/assessment result.
-5. Lam bai tu luyen AI sau khi co weak tags.
-6. Lam teacher AI tools khi course/class authoring on dinh.
-7. Them platform admin aggregate chi phi/log.
-8. Them quota theo package sau cung.
+1. Tạo `ai-generation-logs` và AI orchestration service dùng chung.
+2. Làm AI Tutor general vì ít phụ thuộc content model.
+3. Làm AI Tutor theo lesson sau khi content/lesson ổn định.
+4. Làm learning path cá nhân sau khi có placement/assessment result.
+5. Làm bài tự luyện AI sau khi có weak tags.
+6. Làm teacher AI tools khi course/class authoring ổn định.
+7. Thêm platform admin aggregate chi phí/log.
+8. Thêm quota theo package sau cùng.
 
-## Trang thai ket luan
+## Trạng thái kết luận
 
-AI hien tai moi nam o muc ke hoach san pham va module plan. Backend da co nen identity/profile de lam nen, nhung chua co lop goi provider AI, chua co schema log, chua co conversation history, chua co learning path, chua co AI practice va chua co quota AI.
+AI hiện tại mới nằm ở mức kế hoạch sản phẩm và module plan. Backend đã có nền identity/profile để làm nền, nhưng chưa có lớp gọi provider AI, chưa có schema log, chưa có conversation history, chưa có learning path, chưa có AI practice và chưa có quota AI.

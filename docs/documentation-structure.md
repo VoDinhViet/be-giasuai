@@ -1,65 +1,65 @@
-# Documentation Structure
+# Cấu trúc tài liệu
 
-## Muc dich
+## Mục đích
 
-Tai lieu nay quy dinh cach dung cac file markdown trong du an de tranh trung lap, tranh lech thong tin va giup AI agent/developer doc dung ngu canh.
+Tài liệu này quy định cách dùng các file Markdown trong dự án để tránh trùng lặp, tránh lệch thông tin và giúp AI agent/developer đọc đúng ngữ cảnh.
 
-Hien tai cach chia docs cua du an la hop ly: co tai lieu kien truc, luong he thong, module spec, module plan va progress. Van de chinh khong phai co nhieu file `.md`, ma la can quy dinh ro moi file chiu trach nhiem cho loai thong tin nao.
+Hiện tại cách chia tài liệu của dự án là hợp lý: có tài liệu kiến trúc, luồng hệ thống, module spec, module plan và progress. Vấn đề chính không phải có nhiều file `.md`, mà là cần quy định rõ mỗi file chịu trách nhiệm cho loại thông tin nào.
 
-## Nguyen tac chung
+## Nguyên tắc chung
 
-- Moi thong tin quan trong chi nen co mot nguon su that chinh.
-- File plan khong thay the file spec.
-- File progress khong thay the file system flow.
-- File module spec phai mo ta API/schema/rule dang ton tai trong code hien tai.
-- File module plan phai mo ta y tuong, pham vi va ke hoach trien khai trong tuong lai.
-- Khi code thay doi API module, cap nhat module spec tuong ung.
-- Khi thay doi luong cross-module, cap nhat `docs/system-flow.md`.
-- Khi thay doi trang thai hoan thanh/pending/blocker, cap nhat progress.
-- Khi them file bo sung nhu `usage.md`, can ghi ro file do dung de lam gi va khong dung de lam gi.
+- Mỗi thông tin quan trọng chỉ nên có một nguồn sự thật chính.
+- File plan không thay thế file spec.
+- File progress không thay thế file system flow.
+- File module spec phải mô tả API/schema/rule đang tồn tại trong code hiện tại.
+- File module plan phải mô tả ý tưởng, phạm vi và kế hoạch triển khai trong tương lai.
+- Khi code thay đổi API module, cập nhật module spec tương ứng.
+- Khi thay đổi luồng cross-module, cập nhật `docs/system-flow.md`.
+- Khi thay đổi trạng thái hoàn thành/pending/blocker, cập nhật progress.
+- Khi thêm file bổ sung như `usage.md`, cần ghi rõ file đó dùng để làm gì và không dùng để làm gì.
 
-## Vai tro tung nhom tai lieu
+## Vai trò từng nhóm tài liệu
 
 ### `docs/architecture.md`
 
-Dung de mo ta kien truc tong quan cua backend.
+Dùng để mô tả kiến trúc tổng quan của backend.
 
-Nen co:
+Nên có:
 
 - Tech stack.
 - Module boundaries.
 - Folder structure.
 - Layer responsibilities.
-- Database/API/Auth architecture tong quan.
+- Database/API/Auth architecture tổng quan.
 
-Khong nen co:
+Không nên có:
 
-- Trang thai tung feature.
-- Chi tiet endpoint tung module.
-- Ke hoach product chua lam.
+- Trạng thái từng feature.
+- Chi tiết endpoint từng module.
+- Kế hoạch product chưa làm.
 
 ### `docs/system-flow.md`
 
-Dung de mo ta luong nghiep vu cross-module dang ton tai hoac dang duoc backend ho tro.
+Dùng để mô tả luồng nghiệp vụ cross-module đang tồn tại hoặc đang được backend hỗ trợ.
 
-Nen co:
+Nên có:
 
-- Luong dang ky/dang nhap/session.
-- Luong user profile.
-- Luong class/course neu module dang ton tai.
-- Cac constraint hien tai.
+- Luồng đăng ký/đăng nhập/session.
+- Luồng user profile.
+- Luồng class/course nếu module đang tồn tại.
+- Các constraint hiện tại.
 
-Khong nen co:
+Không nên có:
 
-- Bang status chi tiet tung task.
-- API spec day du.
-- Ke hoach xa chua co backend.
+- Bảng status chi tiết từng task.
+- API spec đầy đủ.
+- Kế hoạch xa chưa có backend.
 
 ### `docs/module-specs/<module>.md`
 
-Dung lam su that cho API module hien tai.
+Dùng làm sự thật cho API module hiện tại.
 
-Nen co:
+Nên có:
 
 - Purpose module.
 - Public API/endpoints.
@@ -71,128 +71,128 @@ Nen co:
 - Security rules.
 - Verification commands.
 
-Khong nen co:
+Không nên có:
 
-- Feature chua co code.
-- Y tuong product chua trien khai.
-- Progress table dai.
+- Feature chưa có code.
+- Ý tưởng product chưa triển khai.
+- Progress table dài.
 
-Quy tac:
+Quy tắc:
 
-- Neu module co code trong `src/api/<module>/`, nen co spec trong `docs/module-specs/<module>.md`.
-- Neu chua co code, khong tao module spec tru khi can ghi contract da chot.
-- Khi thay doi endpoint/DTO/schema/permission/rule, phai cap nhat spec.
+- Nếu module có code trong `src/api/<module>/`, nên có spec trong `docs/module-specs/<module>.md`.
+- Nếu chưa có code, không tạo module spec trừ khi cần ghi contract đã chốt.
+- Khi thay đổi endpoint/DTO/schema/permission/rule, phải cập nhật spec.
 
 ### `docs/module-progress.md`
 
-Dung lam dashboard trang thai tong the cua project.
+Dùng làm dashboard trạng thái tổng thể của project.
 
-Nen co:
+Nên có:
 
-- Module nao `done`, `in-progress`, `planned`, `planned-later`, `blocked`.
-- Backend done noi bat.
-- Pending/blocker noi bat.
-- Verification gan nhat neu co.
+- Module nào `done`, `in-progress`, `planned`, `planned-later`, `blocked`.
+- Backend done nổi bật.
+- Pending/blocker nổi bật.
+- Verification gần nhất nếu có.
 
-Khong nen co:
+Không nên có:
 
-- API spec chi tiet.
-- Toan bo plan tung module.
-- Noi dung trung lap dai voi `module-plans/*/progress.md`.
+- API spec chi tiết.
+- Toàn bộ plan từng module.
+- Nội dung trùng lặp dài với `module-plans/*/progress.md`.
 
-Quy tac:
+Quy tắc:
 
-- Giu ngan gon.
-- Neu can bang chi tiet theo feature, dat trong `docs/module-plans/<module>/progress.md`.
+- Giữ ngắn gọn.
+- Nếu cần bảng chi tiết theo feature, đặt trong `docs/module-plans/<module>/progress.md`.
 
 ### `docs/module-plans/README.md`
 
-Dung de giai thich cach doc module plans va mapping tu nguon yeu cau sang module.
+Dùng để giải thích cách đọc module plans và mapping từ nguồn yêu cầu sang module.
 
-Nen co:
+Nên có:
 
-- Nguon chinh cua plan.
-- Cach doc folder module.
-- Dinh nghia status.
-- Thu tu module.
+- Nguồn chính của plan.
+- Cách đọc folder module.
+- Định nghĩa status.
+- Thứ tự module.
 - Mapping feature Excel -> module.
 
-Khong nen co:
+Không nên có:
 
-- Spec API hien tai.
-- Chi tiet logic tung endpoint.
+- Spec API hiện tại.
+- Chi tiết logic từng endpoint.
 
 ### `docs/module-plans/<module>/description.md`
 
-Dung de mo ta module o muc nghiep vu.
+Dùng để mô tả module ở mức nghiệp vụ.
 
-Nen co:
+Nên có:
 
-- Muc dich module.
-- Pham vi chuc nang.
-- Vai tro nguoi dung.
-- Ngoai pham vi.
+- Mục đích module.
+- Phạm vi chức năng.
+- Vai trò người dùng.
+- Ngoài phạm vi.
 
-Khong nen co:
+Không nên có:
 
-- Endpoint chi tiet.
-- SQL/schema chi tiet.
-- Trang thai task chi tiet.
+- Endpoint chi tiết.
+- SQL/schema chi tiết.
+- Trạng thái task chi tiết.
 
 ### `docs/module-plans/<module>/plan.md`
 
-Dung de mo ta ke hoach backend-ready cho module.
+Dùng để mô tả kế hoạch backend-ready cho module.
 
-Nen co:
+Nên có:
 
-- Muc tieu trien khai.
-- API/module de xuat.
+- Mục tiêu triển khai.
+- API/module đề xuất.
 - Data concept.
 - RBAC.
-- Verification can co.
+- Verification cần có.
 
-Khong nen co:
+Không nên có:
 
-- Noi dung khang dinh da co code neu chua co bang chung.
-- Response DTO chi tiet nhu module spec.
+- Nội dung khẳng định đã có code nếu chưa có bằng chứng.
+- Response DTO chi tiết như module spec.
 
 ### `docs/module-plans/<module>/progress.md`
 
-Dung de theo doi tien do chi tiet cua module theo tung feature.
+Dùng để theo dõi tiến độ chi tiết của module theo từng feature.
 
-Nen co:
+Nên có:
 
-- Trang thai tong quan module.
-- Bang feature/status/evidence/next step.
-- Bang chung ro trong code/docs neu status la `done` hoac `in-progress`.
-- Phu thuoc/blocker.
+- Trạng thái tổng quan module.
+- Bảng feature/status/evidence/next step.
+- Bằng chứng rõ trong code/docs nếu status là `done` hoặc `in-progress`.
+- Phụ thuộc/blocker.
 
-Khong nen co:
+Không nên có:
 
 - Full endpoint spec.
-- Luong cross-module dai.
+- Luồng cross-module dài.
 
 ### `docs/module-plans/<module>/usage.md`
 
-Dung cho module can thong ke cach su dung rieng, vi du AI usage.
+Dùng cho module cần thống kê cách sử dụng riêng, ví dụ AI usage.
 
-Nen co:
+Nên có:
 
-- Cac use case.
+- Các use case.
 - Actor.
 - Input/output.
-- Data/log can luu.
-- Module so huu.
-- Nguyen tac an toan.
-- Thu tu trien khai de nghi.
+- Data/log cần lưu.
+- Module sở hữu.
+- Nguyên tắc an toàn.
+- Thứ tự triển khai đề nghị.
 
-Khong nen co:
+Không nên có:
 
-- API spec bat buoc neu module chua co code.
-- Endpoint/DTO chi tiet thay cho `docs/module-specs/<module>.md`.
-- Chi tiet provider secret/model key.
+- API spec bắt buộc nếu module chưa có code.
+- Endpoint/DTO chi tiết thay cho `docs/module-specs/<module>.md`.
+- Chi tiết provider secret/model key.
 
-## Cau truc de nghi
+## Cấu trúc đề nghị
 
 ```text
 docs/
@@ -221,82 +221,82 @@ docs/
     testing-standards.md
 ```
 
-## Van de hien tai can luu y
+## Vấn đề hiện tại cần lưu ý
 
-### Trung lap nguon su that
+### Trùng lặp nguồn sự thật
 
-Du an co nhieu noi cung co the noi ve trang thai module:
+Dự án có nhiều nơi cùng có thể nói về trạng thái module:
 
 - `docs/module-progress.md`
 - `docs/module-plans/<module>/progress.md`
 - `docs/module-specs/<module>.md`
 - `docs/system-flow.md`
 
-Neu khong chia vai ro ro, cac file nay se de lech nhau.
+Nếu không chia vai trò rõ, các file này sẽ dễ lệch nhau.
 
-Cach xu ly:
+Cách xử lý:
 
-- `module-specs`: noi code/API hien tai.
-- `module-plans`: noi ke hoach va tien do theo feature.
-- `module-progress`: noi tong quan ngan gon.
-- `system-flow`: noi luong nghiep vu cross-module.
+- `module-specs`: nói code/API hiện tại.
+- `module-plans`: nói kế hoạch và tiến độ theo feature.
+- `module-progress`: nói tổng quan ngắn gọn.
+- `system-flow`: nói luồng nghiệp vụ cross-module.
 
-### Plan va spec de bi lan
+### Plan và spec dễ bị lẫn
 
-Neu `plan.md` mo ta endpoint nhu da ton tai, AI agent co the hieu nham la code da co.
+Nếu `plan.md` mô tả endpoint như đã tồn tại, AI agent có thể hiểu nhầm là code đã có.
 
-Cach xu ly:
+Cách xử lý:
 
-- Dung tu `de xuat`, `can tao`, `planned` trong plan.
-- Dung tu `endpoint`, `business rules`, `errors`, `permissions` trong spec khi code da co.
+- Dùng từ `đề xuất`, `cần tạo`, `planned` trong plan.
+- Dùng từ `endpoint`, `business rules`, `errors`, `permissions` trong spec khi code đã có.
 
-### Progress can evidence
+### Progress cần evidence
 
-Status `done` hoac `in-progress` nen co bang chung.
+Status `done` hoặc `in-progress` nên có bằng chứng.
 
-Evidence tot:
+Evidence tốt:
 
 - Endpoint: `POST /auth/login`.
 - File code: `src/api/auth/auth.service.ts`.
 - Schema: `src/database/schemas/users.ts`.
 - Test/build: `pnpm run build`, `pnpm test ...`.
 
-Evidence kem:
+Evidence kém:
 
-- `Da lam` nhung khong ghi file/API.
-- `Gan xong` nhung khong co pending ro.
-- `Done` nhung spec chua cap nhat.
+- `Đã làm` nhưng không ghi file/API.
+- `Gần xong` nhưng không có pending rõ.
+- `Done` nhưng spec chưa cập nhật.
 
-### Worktree dirty lam commit de sai
+### Worktree dirty làm commit dễ sai
 
-Khi repo co nhieu modified/untracked file, viec auto commit rat de dua nham thay doi vao commit.
+Khi repo có nhiều modified/untracked file, việc auto commit rất dễ đưa nhầm thay đổi vào commit.
 
-Cach xu ly:
+Cách xử lý:
 
-- Truoc khi sua, kiem tra `git status --short`.
-- Khi commit, stage dung file lien quan.
-- Khong revert file khong phai minh sua.
-- Sau moi feature, commit rieng theo scope.
+- Trước khi sửa, kiểm tra `git status --short`.
+- Khi commit, stage đúng file liên quan.
+- Không revert file không phải mình sửa.
+- Sau mỗi feature, commit riêng theo scope.
 
-## Quy tac khi them module moi
+## Quy tắc khi thêm module mới
 
-1. Tao `docs/module-plans/<module>/description.md` neu module moi den tu product plan.
-2. Tao `docs/module-plans/<module>/plan.md` de chia API/data/RBAC/verification.
-3. Tao `docs/module-plans/<module>/progress.md` de theo doi tien do.
-4. Khi bat dau code module trong `src/api/<module>/`, tao `docs/module-specs/<module>.md`.
-5. Khi module tao flow anh huong module khac, cap nhat `docs/system-flow.md`.
-6. Khi trang thai tong the doi, cap nhat `docs/module-progress.md`.
+1. Tạo `docs/module-plans/<module>/description.md` nếu module mới đến từ product plan.
+2. Tạo `docs/module-plans/<module>/plan.md` để chia API/data/RBAC/verification.
+3. Tạo `docs/module-plans/<module>/progress.md` để theo dõi tiến độ.
+4. Khi bắt đầu code module trong `src/api/<module>/`, tạo `docs/module-specs/<module>.md`.
+5. Khi module tạo flow ảnh hưởng module khác, cập nhật `docs/system-flow.md`.
+6. Khi trạng thái tổng thể đổi, cập nhật `docs/module-progress.md`.
 
-## Quy tac khi sua API module hien co
+## Quy tắc khi sửa API module hiện có
 
-1. Doc `docs/module-specs/<module>.md` truoc.
-2. Sua code theo request.
-3. Cap nhat spec neu endpoint/DTO/permission/rule/schema thay doi.
-4. Cap nhat progress neu done/pending/blocker doi.
-5. Cap nhat system flow neu thay doi cross-module.
-6. Chay verification phu hop.
-7. Commit rieng scope.
+1. Đọc `docs/module-specs/<module>.md` trước.
+2. Sửa code theo request.
+3. Cập nhật spec nếu endpoint/DTO/permission/rule/schema thay đổi.
+4. Cập nhật progress nếu done/pending/blocker đổi.
+5. Cập nhật system flow nếu thay đổi cross-module.
+6. Chạy verification phù hợp.
+7. Commit riêng scope.
 
-## Ket luan
+## Kết luận
 
-Cach chia markdown hien tai dung huong. Can cai thien bang cach gan vai tro ro cho tung file va giam trung lap. Muc tieu la khi AI agent hoac developer doc docs, ho phai biet file nao la spec hien tai, file nao la ke hoach, file nao la progress va file nao la luong he thong.
+Cách chia Markdown hiện tại đúng hướng. Cần cải thiện bằng cách gắn vai trò rõ cho từng file và giảm trùng lặp. Mục tiêu là khi AI agent hoặc developer đọc docs, họ phải biết file nào là spec hiện tại, file nào là kế hoạch, file nào là progress và file nào là luồng hệ thống.
