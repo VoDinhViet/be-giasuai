@@ -11,10 +11,11 @@ Sheet: Trang tính1
 
 ## Cach doc
 
-- Moi folder module co 3 file: `description.md`, `plan.md`, `progress.md`.
+- Moi folder module co 3 file chinh: `description.md`, `plan.md`, `progress.md`.
 - `description.md` mo ta nghiep vu, vai tro va pham vi so huu cua module.
 - `plan.md` la ke hoach backend-ready o muc domain, API module, data concept, RBAC va verification.
 - `progress.md` ghi trang thai theo tung chuc nang tu Excel va bang chung hien co trong code.
+- Module co the co file bo sung nhu `usage.md` khi can thong ke luong su dung rieng.
 
 ## Trang thai
 
