@@ -214,12 +214,12 @@ export class UsersService {
           .from(users)
           .where(eq(users.isLocked, true)),
       ]);
-    return {
+    return plainToInstance(UserStatsResDto, {
       total: Number(total),
       new: Number(newUsers),
       active: Number(activeUsers),
       locked: Number(lockedUsers),
-    };
+    });
   }
 
   /**
