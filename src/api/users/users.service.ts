@@ -149,10 +149,18 @@ export class UsersService {
       }
     }
 
-    await this.db.transaction(async (tx) => {
-      const { phone, location, bio, avatarUrl } = reqDto;
-      const profileValues = { userId, phone, location, bio, avatarUrl };
+    const {
+      email: _email,
+      username: _username,
+      fullName: _fullName,
+      password: _password,
+      role: _role,
+      isLocked: _isLocked,
+      ...profileReqDto
+    } = reqDto;
+    const profileValues = { userId, ...profileReqDto };
 
+    await this.db.transaction(async (tx) => {
       await tx
         .update(users)
         .set({
@@ -168,10 +176,7 @@ export class UsersService {
         .values(profileValues)
         .onConflictDoUpdate({
           target: userProfiles.userId,
-          set: {
-            ...profileValues,
-            updatedAt: new Date(),
-          },
+          set: profileValues,
         });
 
       if (reqDto.isLocked) {
