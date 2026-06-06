@@ -45,6 +45,30 @@ Cách làm này biến AI thành một coding agent có khả năng xử lý cô
 - Sửa schema, migration và logic cùng lúc khi thay đổi model dữ liệu.
 - Viết tài liệu bằng tiếng Việt có dấu để dễ đọc và dễ bàn giao.
 
+## Quy tắc dùng spread DTO khi ghi dữ liệu
+
+Khi DTO có field trùng trực tiếp với cột của bảng, tôi ưu tiên dùng spread để giảm mapping thủ công.
+
+Ví dụ nên dùng:
+
+```ts
+await tx.insert(users).values({
+  ...dto,
+  password: hashedPassword,
+});
+```
+
+Ví dụ update có field cần xử lý trước:
+
+```ts
+await tx.update(users).set({
+  ...reqDto,
+  ...(reqDto.password ? { password: await hashPassword(reqDto.password) } : {}),
+});
+```
+
+Không dùng spread nếu DTO có field không thuộc bảng đang ghi, hoặc field cần đổi tên, tách bảng, tính toán phức tạp. Khi đó chỉ spread phần chắc chắn đúng, phần còn lại vẫn map rõ ràng.
+
 ## Ưu điểm
 
 ### Tốc độ triển khai nhanh

@@ -542,8 +542,7 @@ export class ClassesService {
         .insert(classCourses)
         .values({
           classId: classRow.id,
-          courseId: reqDto.courseId,
-          required: reqDto.required,
+          ...reqDto,
         })
         .onConflictDoNothing({
           target: [classCourses.classId, classCourses.courseId],
@@ -692,7 +691,7 @@ export class ClassesService {
     const [updatedEnrollment] = await this.db
       .update(classEnrollments)
       .set({
-        status: reqDto.status,
+        ...reqDto,
         reviewedAt:
           reqDto.status === ClassEnrollmentStatus.PENDING ? null : new Date(),
       })

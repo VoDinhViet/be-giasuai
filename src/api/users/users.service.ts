@@ -288,11 +288,8 @@ export class UsersService {
       const [user] = await tx
         .insert(users)
         .values({
-          email: dto.email,
-          username: dto.username,
+          ...dto,
           password: hashedPassword,
-          fullName: dto.fullName,
-          role: dto.role,
         })
         .returning({
           id: users.id,
