@@ -11,6 +11,8 @@ Sheet: Trang tính1
 
 ## Cach doc
 
+Quy dinh vai tro tung nhom markdown xem tai `docs/documentation-structure.md`.
+
 - Moi folder module co 3 file chinh: `description.md`, `plan.md`, `progress.md`.
 - `description.md` mo ta nghiep vu, vai tro va pham vi so huu cua module.
 - `plan.md` la ke hoach backend-ready o muc domain, API module, data concept, RBAC va verification.
