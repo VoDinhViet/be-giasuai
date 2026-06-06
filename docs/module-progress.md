@@ -14,11 +14,16 @@ Completed in backend:
 - Password reset deletes active sessions.
 - Refresh token endpoint validates and rotates session hash.
 - Access-token verification checks session existence, current role, and lock status.
+- `GET /users/me` and Admin user detail load users through Drizzle relation query with required `profile` data.
+- `PATCH /users/me` reuses the same update flow as Admin user update through `UpdateUserReqDto`.
+- User update supports account/profile fields, hashes changed passwords, updates `user_profiles`, and revokes sessions when locking.
 - Admin toggle-lock flips account lock state server-side and returns the updated user.
-- Admin user update supports whitelisted account fields and revokes sessions when locking.
+- User stats return `UserStatsResDto` through `plainToInstance`.
+- User response DTOs omit permission codes; Auth responses still return role-derived permission codes.
 - Extended user profiles persist phone, location, bio, and avatar URL in required `user_profiles` rows.
+- Demo user seed creates one Admin, one Instructor, and ten Learners with password `12345678`.
 - Basic RBAC permissions are derived from roles and enforced with `@Permissions(...)`.
-- Login, refresh-token, `/auth/me`, and user profile responses expose role-derived permission codes.
+- Login, refresh-token, and `/auth/me` responses expose role-derived permission codes.
 
 Known limits:
 
@@ -33,10 +38,10 @@ Verification:
 
 ## Other Modules
 
-- `user-profiles`: `in-progress`
-  - Backend done: current profile read/update `fullName`, Admin user detail, required extended profile row creation/backfill, extended profile update, Learner file upload access for avatar handoff.
+- `user-profiles`: `done`
+  - Backend done: current profile read/detail, Admin user detail, required extended profile row creation/backfill, account/profile update through shared user update flow, Learner file upload access for avatar handoff.
   - Frontend done: current-user profile page/update form, account-menu profile link, Admin user detail page link from user table.
-  - Pending: persistent `avatarUrl` and activity summary require data model/migration decisions.
+  - Pending: activity summary requires data model/product decisions.
 - `learning-delivery`: `planned`
 - `assessments-grading`: `planned`
 - `ai-personalization`: `planned`

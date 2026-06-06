@@ -62,9 +62,12 @@
 ### Update Current User Profile
 
 1. Client calls `PATCH /users/me`.
-2. Backend accepts only safe profile fields: `fullName`, phone, location, bio, and avatar URL.
-3. Backend rejects missing users and never mutates email, username, role, lock status, password, sessions, tokens, or OTP data.
-4. Backend stores extended profile data in the user's existing `user_profiles` row, keeping authentication/account fields in `users`.
+2. Backend validates the request body with `UpdateUserReqDto`.
+3. Backend reuses the shared user update flow with the authenticated user ID.
+4. Backend rejects missing users and duplicate email/username values.
+5. Backend hashes a changed password before saving.
+6. Backend upserts profile fields into `user_profiles` and updates account fields in `users`.
+7. Backend deletes active sessions when the request locks the account.
 
 ### Avatar Upload Handoff
 
