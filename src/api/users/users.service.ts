@@ -27,7 +27,7 @@ import { plainToInstance } from 'class-transformer';
 import { OrderBy } from '../../constants/app.constant';
 import { UserStatsResDto } from './dto/user-stats.res.dto';
 import { CreateUserDto } from './dto/create-user.dto';
-import { Role } from '../../constants/role.constant';
+import { UserRole } from '../../constants/role.constant';
 import { UpdateUserReqDto } from './dto/update-user.req.dto';
 import { hashPassword } from '../../utils/password.util';
 
@@ -41,7 +41,7 @@ export class UsersService {
   async getUsers(
     pageOptions: GetUsersDto,
   ): Promise<OffsetPaginatedDto<UserResDto>> {
-    const conditions: SQL[] = [ne(users.role, Role.ADMIN)];
+    const conditions: SQL[] = [ne(users.role, UserRole.ADMIN)];
 
     if (pageOptions.q) {
       const q = or(

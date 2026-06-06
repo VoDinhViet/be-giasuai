@@ -12,8 +12,8 @@ import { userProfiles } from './user-profiles';
 
 export const userRoleEnum = pgEnum('user_role', [
   'ADMIN',
-  'STUDENT',
-  'TEACHER',
+  'INSTRUCTOR',
+  'LEARNER',
 ]);
 
 export const users = pgTable('users', {
@@ -22,7 +22,7 @@ export const users = pgTable('users', {
   username: text('username').notNull().unique(),
   fullName: text('full_name').notNull(),
   password: text('password').notNull(),
-  role: userRoleEnum('role').default('STUDENT').notNull(),
+  role: userRoleEnum('role').default('LEARNER').notNull(),
   isLocked: boolean('is_locked').default(false).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at')

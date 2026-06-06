@@ -9,9 +9,9 @@
 3. Backend creates the user with `isLocked = true` and creates the matching `user_profiles` row.
 4. Backend stores a hashed 6-digit registration OTP in cache.
 5. Client calls `POST /auth/register/verify-otp` with `userId` and OTP.
-6. If the user is `STUDENT`, backend unlocks the account.
-7. If the user is `TEACHER`, backend returns `requiresAdminVerification = true` and the account remains locked.
-8. Teacher Admin verification API is deferred until product requirements are clear.
+6. If the user is `LEARNER`, backend unlocks the account.
+7. If the user is `INSTRUCTOR`, backend returns `requiresAdminVerification = true` and the account remains locked.
+8. Instructor Admin verification API is deferred until product requirements are clear.
 
 ### Login And Sessions
 
@@ -68,7 +68,7 @@
 
 ### Avatar Upload Handoff
 
-1. Student, Teacher, or Admin uploads through `POST /files/upload`.
+1. Learner, Instructor, or Admin uploads through `POST /files/upload`.
 2. Backend returns a public file URL.
 3. Client persists the returned URL through `PATCH /users/me` as `avatarUrl`.
 
@@ -76,45 +76,45 @@
 
 ### Create Course
 
-1. Admin or Teacher calls `POST /courses` with code, name, category, optional course fields, chapters, and lessons already mapped to backend DTO values.
+1. Admin or Instructor calls `POST /courses` with code, name, category, optional course fields, chapters, and lessons already mapped to backend DTO values.
 2. Backend validates the request body with `CreateCourseReqDto`.
 3. Backend rejects duplicate course codes with HTTP `409`.
 4. Backend inserts the course, inserts chapters into `course_chapters`, links lessons by `chapterCode`, inserts lessons into `course_lessons`, and returns `CourseResDto`.
 
 ### Course Management
 
-1. Admin or Teacher calls `GET /courses` for paginated course listing.
-2. Admin or Teacher calls `GET /courses/stats` for course dashboard metrics.
-3. Admin or Teacher calls `GET /courses/:courseCode` for detail.
-4. Admin or Teacher calls `PATCH /courses/:courseCode` to update whitelisted course fields.
+1. Admin or Instructor calls `GET /courses` for paginated course listing.
+2. Admin or Instructor calls `GET /courses/stats` for course dashboard metrics.
+3. Admin or Instructor calls `GET /courses/:courseCode` for detail.
+4. Admin or Instructor calls `PATCH /courses/:courseCode` to update whitelisted course fields.
 
 ## Classroom Management Flow
 
 ### Class Listing
 
 1. An authenticated user calls `GET /classes` for paginated class listing.
-2. Admin, Teacher, or Student calls `GET /classes/stats` with the same filters and pagination for classroom dashboard cards.
+2. Admin, Instructor, or Learner calls `GET /classes/stats` with the same filters and pagination for classroom dashboard cards.
 3. Backend supports keyword search by class, course, and instructor names.
 4. Backend supports filtering by class status, course ID, and instructor ID.
-5. Student class listing and stats are scoped to classes where the current user has an `ACTIVE` or `COMPLETED` enrollment.
+5. Learner class listing and stats are scoped to classes where the current user has an `ACTIVE` or `COMPLETED` enrollment.
 6. Backend returns instructor, capacity, schedule, date range, and status for each class row.
-7. Backend returns dashboard stats for total matched classes, current-page active classes, current-page active student count, current-page upcoming classes, and pagination values.
+7. Backend returns dashboard stats for total matched classes, current-page active classes, current-page active learner count, current-page upcoming classes, and pagination values.
 
 ### Class Course Assignment
 
-1. Admin or Teacher opens class detail through `GET /classes/:classCode`.
-2. Backend returns assigned courses from `class_courses` with `required`, lesson count, and placeholder completed lesson count, plus active students and sessions for the detail view.
-3. Admin or Teacher calls `POST /classes/:classCode/courses` with `courseId` and `required`.
+1. Admin or Instructor opens class detail through `GET /classes/:classCode`.
+2. Backend returns assigned courses from `class_courses` with `required`, lesson count, and placeholder completed lesson count, plus active learners and sessions for the detail view.
+3. Admin or Instructor calls `POST /classes/:classCode/courses` with `courseId` and `required`.
 4. Backend verifies the class and course exist, rejects duplicate assignments, and inserts the class-course row.
 5. Backend stores all class-course membership in `class_courses`; the `classes` table does not store a course foreign key.
 
-### Invite Student To Class
+### Invite Learner To Class
 
-1. Admin or Teacher opens class enrollment management through `GET /classes/:classCode/enrollments`.
-2. Admin or Teacher calls `POST /classes/:classCode/enrollments/invite` with the student's email and optional note.
-3. Backend finds an existing Student user by email and rejects missing or non-student accounts.
+1. Admin or Instructor opens class enrollment management through `GET /classes/:classCode/enrollments`.
+2. Admin or Instructor calls `POST /classes/:classCode/enrollments/invite` with the learner's email and optional note.
+3. Backend finds an existing Learner user by email and rejects missing or non-learner accounts.
 4. Backend creates a `PENDING` class enrollment with `source = INVITE`, or reopens a previous pending/rejected/dropped enrollment.
-5. Backend rejects students who are already active or completed in the class.
+5. Backend rejects learners who are already active or completed in the class.
 6. Email delivery is not wired yet; the endpoint currently persists the invite state for the management UI.
 
 ## Current Constraints

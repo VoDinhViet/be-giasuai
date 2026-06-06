@@ -4,7 +4,7 @@ import {
   PasswordField,
   StringField,
 } from '../../../decorators/field.decorators';
-import { Role } from '../../../constants/role.constant';
+import { UserRole } from '../../../constants/role.constant';
 
 export class RegisterReqDto {
   @EmailField({ description: 'Địa chỉ email của người dùng' })
@@ -19,6 +19,6 @@ export class RegisterReqDto {
   @StringField({ description: 'Tên đăng nhập', toLowerCase: true })
   username: string;
 
-  @EnumField(() => Role, { description: 'Vai trò của người dùng' })
-  role: Role;
+  @EnumField(() => UserRole, { description: 'Vai trò của người dùng' })
+  role: UserRole;
 }

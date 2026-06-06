@@ -10,7 +10,7 @@ export class VerifyRegistrationOtpResDto {
 
   @Expose()
   @BooleanField({
-    description: 'Tai khoan Teacher van can Admin xac thuc sau OTP',
+    description: 'Tai khoan Instructor van can Admin xac thuc sau OTP',
   })
   requiresAdminVerification!: boolean;
 }

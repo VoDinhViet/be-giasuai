@@ -18,7 +18,7 @@ import { OffsetPaginatedDto } from '../../common/offset-pagination/paginated.dto
 import { OffsetPaginationDto } from '../../common/offset-pagination/offset-pagination.dto';
 import { OrderBy } from '../../constants/app.constant';
 import { ErrorCode } from '../../constants/error-code.constant';
-import { Role } from '../../constants/role.constant';
+import { UserRole } from '../../constants/role.constant';
 import { DRIZZLE } from '../../database/database.module';
 import type { Database } from '../../database/database.type';
 import { classCourses } from '../../database/schemas/classes/class-courses';
@@ -299,7 +299,7 @@ export class ClassesService {
       conditions.push(eq(classes.instructorId, pageOptions.instructorId));
     }
 
-    if (payload?.role === Role.STUDENT) {
+    if (payload?.role === UserRole.LEARNER) {
       const learnerClassEnrollments = aliasedTable(
         classEnrollments,
         'learner_class_enrollments',
@@ -605,17 +605,17 @@ export class ClassesService {
     reqDto: InviteUserToClassReqDto,
   ): Promise<ClassEnrollmentResDto> {
     const classRow = await this.getClassBaseRow(classCode);
-    const student = await this.db.query.users.findFirst({
-      where: and(eq(users.email, reqDto.email), eq(users.role, Role.STUDENT)),
+    const learner = await this.db.query.users.findFirst({
+      where: and(eq(users.email, reqDto.email), eq(users.role, UserRole.LEARNER)),
       columns: {
         id: true,
       },
     });
 
-    if (!student) {
+    if (!learner) {
       throw new AppException(
         ErrorCode.E002,
-        'Student not found',
+        'Learner not found',
         HttpStatus.NOT_FOUND,
       );
     }
@@ -623,7 +623,7 @@ export class ClassesService {
     const existingEnrollment = await this.db.query.classEnrollments.findFirst({
       where: and(
         eq(classEnrollments.classId, classRow.id),
-        eq(classEnrollments.learnerId, student.id),
+        eq(classEnrollments.learnerId, learner.id),
       ),
       columns: {
         id: true,
@@ -637,7 +637,7 @@ export class ClassesService {
     ) {
       throw new AppException(
         ErrorCode.E001,
-        'Student already joined this class',
+        'Learner already joined this class',
         HttpStatus.CONFLICT,
       );
     }
@@ -665,7 +665,7 @@ export class ClassesService {
         .insert(classEnrollments)
         .values({
           classId: classRow.id,
-          learnerId: student.id,
+          learnerId: learner.id,
           source: ClassEnrollmentSource.INVITE,
           status: ClassEnrollmentStatus.PENDING,
           note: reqDto.note,

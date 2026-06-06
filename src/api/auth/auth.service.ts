@@ -41,7 +41,7 @@ import { RequestPasswordResetOtpReqDto } from './dto/request-password-reset-otp.
 import { ResetPasswordReqDto } from './dto/reset-password.req.dto';
 import { RefreshTokenReqDto } from './dto/refresh-token.req.dto';
 import type { RefreshJwtPayloadType } from './types/refresh-jwt-payload.type';
-import { Role } from '../../constants/role.constant';
+import { UserRole } from '../../constants/role.constant';
 import { getPermissionCodesByRole } from '../../constants/permission.constant';
 
 type OtpCacheValue = {
@@ -174,7 +174,7 @@ export class AuthService {
   }
 
   async register(dto: RegisterReqDto): Promise<RegisterResDto> {
-    if (dto.role === Role.ADMIN) {
+    if (dto.role === UserRole.ADMIN) {
       throw new AppException(
         ErrorCode.E007,
         'Public admin registration is not allowed',
@@ -274,7 +274,7 @@ export class AuthService {
       dto.otpCode,
     );
 
-    if (user.role === Role.STUDENT) {
+    if (user.role === UserRole.LEARNER) {
       await this.db
         .update(users)
         .set({ isLocked: false })
@@ -287,7 +287,7 @@ export class AuthService {
 
     return plainToInstance(VerifyRegistrationOtpResDto, {
       isVerified: true,
-      requiresAdminVerification: user.role === Role.TEACHER,
+      requiresAdminVerification: user.role === UserRole.INSTRUCTOR,
     });
   }
 

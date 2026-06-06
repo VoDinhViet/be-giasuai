@@ -162,6 +162,13 @@
       "when": 1780711139827,
       "tag": "0022_backfill_user_profiles",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1780713891404,
+      "tag": "0023_rename_user_role_values",
+      "breakpoints": true
     }
   ]
 }

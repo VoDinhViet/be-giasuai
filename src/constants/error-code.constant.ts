@@ -15,7 +15,7 @@ export enum ErrorCode {
   E006 = 'auth.error.invalid_otp',
   E007 = 'auth.error.admin_registration_not_allowed',
   E008 = 'auth.error.invalid_refresh_token',
-  E009 = 'auth.error.teacher_not_found',
+  E009 = 'auth.error.instructor_not_found',
   E105 = 'file.error.not_found',
   V003 = 'common.error.too_many_requests',
 }

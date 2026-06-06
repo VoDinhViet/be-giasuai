@@ -18,23 +18,23 @@ async function main() {
   const db = drizzle(client, { schema });
 
   try {
-    console.log('Seeding teacher account...');
+    console.log('Seeding instructor account...');
 
-    const email = 'teacher@giasuai.com';
-    const username = 'teacher';
-    const fullName = 'Demo Teacher';
+    const email = 'instructor@giasuai.com';
+    const username = 'instructor';
+    const fullName = 'Demo Instructor';
     const password = '123456';
 
     const hashedPassword = await hashPassword(password);
 
-    const [teacherUser] = await db
+    const [instructorUser] = await db
       .insert(users)
       .values({
         email,
         username,
         fullName,
         password: hashedPassword,
-        role: 'TEACHER',
+        role: 'INSTRUCTOR',
         isLocked: false,
       })
       .onConflictDoUpdate({
@@ -43,7 +43,7 @@ async function main() {
           username,
           fullName,
           password: hashedPassword,
-          role: 'TEACHER',
+          role: 'INSTRUCTOR',
           isLocked: false,
           updatedAt: new Date(),
         },
@@ -52,15 +52,15 @@ async function main() {
 
     await db
       .insert(userProfiles)
-      .values({ userId: teacherUser.id })
+      .values({ userId: instructorUser.id })
       .onConflictDoNothing({ target: userProfiles.userId });
 
-    console.log('Teacher account created/updated successfully.');
-    console.log(`Email: ${teacherUser.email}`);
-    console.log(`Username: ${teacherUser.username}`);
+    console.log('Instructor account created/updated successfully.');
+    console.log(`Email: ${instructorUser.email}`);
+    console.log(`Username: ${instructorUser.username}`);
     console.log(`Password: ${password}`);
   } catch (error) {
-    console.error('Failed to seed teacher account');
+    console.error('Failed to seed instructor account');
     console.error(error);
   } finally {
     await client.end();

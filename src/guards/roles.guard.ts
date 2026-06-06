@@ -6,21 +6,33 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 
-import { Role } from '../constants/role.constant';
+import { UserRole } from '../constants/role.constant';
 import { JwtPayloadType } from '../api/auth/types/jwt-payload.type';
 import { ROLES_KEY } from '../decorators/roles.decorator';
+import {
+  Permission,
+  getPermissionCodesByRole,
+  type PermissionCode,
+} from '../constants/permission.constant';
+import { PERMISSIONS_KEY } from '../decorators/permissions.decorator';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
   constructor(private readonly reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
-    const requiredRoles = this.reflector.getAllAndOverride<Role[]>(ROLES_KEY, [
+    const requiredPermissions = this.reflector.getAllAndOverride<
+      PermissionCode[]
+    >(PERMISSIONS_KEY, [context.getHandler(), context.getClass()]);
+    const requiredRoles = this.reflector.getAllAndOverride<UserRole[]>(ROLES_KEY, [
       context.getHandler(),
       context.getClass(),
     ]);
 
-    if (!requiredRoles || requiredRoles.length === 0) {
+    if (
+      (!requiredPermissions || requiredPermissions.length === 0) &&
+      (!requiredRoles || requiredRoles.length === 0)
+    ) {
       return true;
     }
 
@@ -31,7 +43,25 @@ export class RolesGuard implements CanActivate {
       return false;
     }
 
-    if (!requiredRoles.includes(user.role as Role)) {
+    if (requiredPermissions && requiredPermissions.length > 0) {
+      const userPermissions = getPermissionCodesByRole(user.role);
+      const hasSystemManage = userPermissions.includes(
+        Permission.SYSTEM_MANAGE,
+      );
+      const hasRequiredPermission = requiredPermissions.every((permission) =>
+        userPermissions.includes(permission),
+      );
+
+      if (!hasSystemManage && !hasRequiredPermission) {
+        throw new ForbiddenException(
+          'Ban khong co quyen truy cap tai nguyen nay',
+        );
+      }
+
+      return true;
+    }
+
+    if (!requiredRoles.includes(user.role as UserRole)) {
       throw new ForbiddenException(
         'Ban khong co quyen truy cap tai nguyen nay',
       );
