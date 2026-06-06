@@ -215,10 +215,10 @@ export class UsersService {
           .where(eq(users.isLocked, true)),
       ]);
     return plainToInstance(UserStatsResDto, {
-      total: Number(total),
-      new: Number(newUsers),
-      active: Number(activeUsers),
-      locked: Number(lockedUsers),
+      total,
+      new: newUsers,
+      active: activeUsers,
+      locked: lockedUsers,
     });
   }
 
