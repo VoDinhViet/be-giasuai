@@ -1,4 +1,4 @@
-import { Body, Controller, HttpStatus, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
 import { AuthService } from './auth.service';
@@ -16,6 +16,8 @@ import { VerifyRegistrationOtpResDto } from './dto/verify-registration-otp.res.d
 import { ApiAuth, ApiPublic } from '../../decorators/http.decorators';
 import { CurrentUser } from '../../decorators/user.decorator';
 import { JwtPayloadType } from './types/jwt-payload.type';
+import { UsersService } from '../users/users.service';
+import { UserResDto } from '../users/dto/user.res.dto';
 
 @ApiTags('auth')
 @Controller({
@@ -23,7 +25,10 @@ import { JwtPayloadType } from './types/jwt-payload.type';
   version: '1',
 })
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly usersService: UsersService,
+  ) {}
 
   @Post('login')
   @ApiPublic({
@@ -120,5 +125,14 @@ export class AuthController {
   })
   logout(@CurrentUser() payload: JwtPayloadType): Promise<void> {
     return this.authService.logout(payload);
+  }
+
+  @Get('me')
+  @ApiAuth({
+    type: UserResDto,
+    summary: 'Lay thong tin nguoi dung hien tai va quyen',
+  })
+  getMe(@CurrentUser() payload: JwtPayloadType): Promise<UserResDto> {
+    return this.usersService.getUserById(payload.userId);
   }
 }

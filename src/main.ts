@@ -80,9 +80,10 @@ async function bootstrap() {
     setupSwagger(app);
   }
 
-  const port = configService.get('app.port', { infer: true }) || process.env.PORT || 3000;
+  const port =
+    configService.get('app.port', { infer: true }) || process.env.PORT || 3000;
   await app.listen(port);
-  
+
   Logger.log(
     `Application is running on: http://localhost:${port}/api`,
     'Bootstrap',

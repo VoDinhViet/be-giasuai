@@ -12,8 +12,8 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { FilesService } from './files.service';
 import { ApiAuth } from '../../decorators/http.decorators';
-import { Role } from '../../constants/role.constant';
-import { Roles } from '../../decorators/roles.decorator';
+import { Permission } from '../../constants/permission.constant';
+import { Permissions } from '../../decorators/permissions.decorator';
 
 @ApiTags('files')
 @Controller({
@@ -24,7 +24,7 @@ export class FilesController {
   constructor(private readonly filesService: FilesService) {}
 
   @Post('upload')
-  @Roles(Role.ADMIN, Role.TEACHER, Role.STUDENT)
+  @Permissions(Permission.FILES_UPLOAD)
   @ApiAuth({
     summary: 'Upload file (Ảnh, Tài liệu...)',
     statusCode: 201,

@@ -1,5 +1,6 @@
 import {
   NumberField,
+  StringField,
   TokenField,
   UUIDField,
 } from '../../../decorators/field.decorators';
@@ -10,6 +11,14 @@ export class LoginResDto {
   @Expose()
   @UUIDField()
   userId!: string;
+
+  @Expose()
+  @StringField()
+  role!: string;
+
+  @Expose()
+  @StringField({ each: true })
+  permissionCodes!: string[];
 
   @Expose()
   @TokenField()

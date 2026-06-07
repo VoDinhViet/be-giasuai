@@ -96,20 +96,65 @@
 ### Class Listing
 
 1. An authenticated user calls `GET /classes` for paginated class listing.
-2. Admin, Instructor, or Learner calls `GET /classes/stats` with the same filters and pagination for classroom dashboard cards.
-3. Backend supports keyword search by class, course, and instructor names.
-4. Backend supports filtering by class status, course ID, and instructor ID.
-5. Learner class listing and stats are scoped to classes where the current user has an `ACTIVE` or `COMPLETED` enrollment.
-6. Backend returns instructor, capacity, schedule, date range, and status for each class row.
-7. Backend returns dashboard stats for total matched classes, current-page active classes, current-page active learner count, current-page upcoming classes, and pagination values.
+2. Backend supports keyword search by class `code` and `name`.
+3. Backend supports filtering by class `status`.
+4. Backend returns paginated class rows that match the `classes` schema fields, plus instructor information.
+5. Admin, Instructor, or Learner calls `GET /classes/stats` for classroom dashboard cards.
+6. Backend returns dashboard stats for total classes, active learners, and upcoming classes.
+
+### Class Creation
+
+1. Admin or Instructor calls `POST /classes` with class schedule, instructor, capacity, format, join policy, flags, and optional note.
+2. Backend generates a unique class code and inserts one row into `classes`.
+3. Backend returns the inserted class row.
+4. The create-class payload does not accept `courseId` or `courseIds`; course assignment is handled by the class-course endpoint.
+
+Web contract for `POST /classes`:
+
+- Permission: `classes:manage`.
+- Request body:
+
+  ```json
+  {
+    "name": "B2B Sales A01",
+    "instructorId": "fd86c7e7-1939-42c5-a080-ecda6ff80f3c",
+    "maxStudents": 36,
+    "meetingUrl": "https://meet.example.com/class-a01",
+    "startDate": "2026-06-10",
+    "endDate": "2026-08-10",
+    "startTime": "19:00",
+    "endTime": "20:30",
+    "repeatDays": ["MONDAY", "WEDNESDAY"],
+    "status": "UPCOMING",
+    "format": "ONLINE",
+    "joinPolicy": "REQUEST_APPROVAL",
+    "waitlistEnabled": true,
+    "reminderEnabled": true,
+    "autoCreateSessions": true,
+    "note": "Prepare onboarding material"
+  }
+  ```
+
+- Backend-generated fields: `id`, `code`, `createdAt`, `updatedAt`.
+- Response body: `ClassResDto` with `classes` schema fields: `id`, `code`, `name`, `instructorId`, `maxStudents`, `meetingUrl`, `startDate`, `endDate`, `startTime`, `endTime`, `repeatDays`, `status`, `format`, `joinPolicy`, `waitlistEnabled`, `reminderEnabled`, `autoCreateSessions`, `note`, `createdAt`, `updatedAt`.
+- Course assignment must be done after creation through `POST /classes/:classCode/courses`.
 
 ### Class Course Assignment
 
 1. Admin or Instructor opens class detail through `GET /classes/:classCode`.
-2. Backend returns assigned courses from `class_courses` with `required`, lesson count, and placeholder completed lesson count, plus active learners and sessions for the detail view.
-3. Admin or Instructor calls `POST /classes/:classCode/courses` with `courseId` and `required`.
-4. Backend verifies the class and course exist, rejects duplicate assignments, and inserts the class-course row.
-5. Backend stores all class-course membership in `class_courses`; the `classes` table does not store a course foreign key.
+2. Backend returns class detail fields from the `classes` schema.
+3. Admin or Instructor calls `GET /classes/:classCode/courses` to list assigned courses.
+4. Backend returns assigned courses as `CourseResDto` rows.
+5. Admin or Instructor calls `POST /classes/:classCode/courses` with `courseId` and `required`.
+6. Backend verifies the class and course exist, rejects duplicate assignments, and inserts the class-course row.
+7. Backend stores all class-course membership in `class_courses`; the `classes` table does not store a course foreign key.
+
+### Class Deletion
+
+1. Admin or Instructor calls `DELETE /classes/:classCode`.
+2. Backend deletes the class row matched by `code`.
+3. Related class courses, enrollments, sessions, and attendance records are removed by database cascade rules.
+4. Backend returns `204 No Content` on success, or `404` when the class code is not found.
 
 ### Invite Learner To Class
 

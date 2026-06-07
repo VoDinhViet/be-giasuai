@@ -75,6 +75,7 @@ Rules and conventions for Drizzle schema design, queries, transactions, seed scr
 ## 3. Typed Queries vs Raw SQL
 
 - **Rule:** Always import query operators (`eq`, `and`, `or`, `inArray`, `count`) directly from `drizzle-orm`. Never use string concatenation to build raw SQL queries.
+- **Rule:** When a query needs all table columns plus computed fields, spread `getTableColumns(table)` inside `.select({ ... })` instead of manually listing every schema column.
 
 ### Examples
 
@@ -102,6 +103,17 @@ Rules and conventions for Drizzle schema design, queries, transactions, seed scr
   });
   ```
 
+  ```ts
+  import { getTableColumns, sql } from 'drizzle-orm';
+
+  const postRows = await db
+    .select({
+      ...getTableColumns(posts),
+      titleLength: sql<number>`length(${posts.title})`,
+    })
+    .from(posts);
+  ```
+
 ---
 
 ## 4. Multi-Step Writes & Transactions
@@ -124,6 +136,7 @@ Rules and conventions for Drizzle schema design, queries, transactions, seed scr
   ```
 
 - **Good (Positive):**
+
   ```ts
   async createOrder(reqDto: CreateOrderReqDto) {
     return this.db.transaction(async (tx) => {

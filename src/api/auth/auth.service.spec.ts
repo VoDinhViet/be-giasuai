@@ -5,7 +5,7 @@ import type { Cache } from 'cache-manager';
 import * as bcrypt from 'bcryptjs';
 
 import { AuthService } from './auth.service';
-import { Role } from '../../constants/role.constant';
+import { UserRole } from '../../constants/role.constant';
 import { ErrorCode } from '../../constants/error-code.constant';
 import { AppException } from '../../exceptions/app.exception';
 import type { AllConfigType } from '../../config/config.type';
@@ -116,7 +116,8 @@ describe('AuthService', () => {
     cache = createCacheMock();
     jwt = createJwtMock();
     bcryptHash = bcrypt.hash as unknown as jest.MockedFunction<BcryptHash>;
-    bcryptCompare = bcrypt.compare as unknown as jest.MockedFunction<BcryptCompare>;
+    bcryptCompare =
+      bcrypt.compare as unknown as jest.MockedFunction<BcryptCompare>;
     service = new AuthService(
       createConfigService(),
       cache as unknown as Cache,
@@ -140,7 +141,7 @@ describe('AuthService', () => {
       username: 'student',
       fullName: 'Student',
       password: 'secret123',
-      role: Role.STUDENT,
+      role: UserRole.LEARNER,
     });
 
     expect(result.userId).toBe('user-id');
@@ -150,7 +151,7 @@ describe('AuthService', () => {
     expect(valuesCall).toMatchObject({
       email: 'student@example.com',
       username: 'student',
-      role: Role.STUDENT,
+      role: UserRole.LEARNER,
       isLocked: true,
     });
     expect(cache.set).toHaveBeenCalledWith(
@@ -167,7 +168,7 @@ describe('AuthService', () => {
         username: 'admin',
         fullName: 'Admin',
         password: 'secret123',
-        role: Role.ADMIN,
+        role: UserRole.ADMIN,
       }),
     ).rejects.toMatchObject({
       response: {
@@ -181,7 +182,7 @@ describe('AuthService', () => {
     db.query.users.findFirst.mockResolvedValue({
       id: 'user-id',
       password: 'hash',
-      role: Role.STUDENT,
+      role: UserRole.LEARNER,
       isLocked: true,
     });
     bcryptCompare.mockResolvedValue(true);
@@ -202,7 +203,7 @@ describe('AuthService', () => {
   it('verifyRegistrationOtp unlocks students and deletes the used OTP', async () => {
     db.query.users.findFirst.mockResolvedValue({
       id: 'student-id',
-      role: Role.STUDENT,
+      role: UserRole.LEARNER,
     });
     cache.get.mockResolvedValue({ codeHash: 'otp-hash' });
     db.update = createUpdateWhereMock();
@@ -252,7 +253,7 @@ describe('AuthService', () => {
       hash: 'stored-hash',
       user: {
         id: 'user-id',
-        role: Role.STUDENT,
+        role: UserRole.LEARNER,
         isLocked: false,
       },
     });

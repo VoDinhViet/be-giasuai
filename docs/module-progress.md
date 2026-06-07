@@ -50,7 +50,7 @@ Verification:
   - Backend done: course schema, list/detail/stats/update endpoints, create course-tree endpoint, duplicate code validation, focused controller/service specs.
   - Pending: persistent permission model remains deferred.
 - `classroom-management`: `in-progress`
-  - Backend done: class schema without direct course foreign key or class-level room, class-course many-course assignment schema, class enrollment schema, class sessions and attendance schemas, grouped `classes/` and `courses/` database schema folders, paginated class list endpoint with Learner enrollment scoping, classroom dashboard stats endpoint with Learner enrollment scoping, create/detail/session/enrollment endpoints, paginated class-course listing endpoint, add-course-to-class endpoint, invite-learner-to-class endpoint, focused controller/service specs.
+  - Backend done: class schema without direct course foreign key or class-level room, class-course many-course assignment schema, class enrollment schema, class sessions and attendance schemas, grouped `classes/` and `courses/` database schema folders, paginated class list endpoint with keyword/status filters, classroom dashboard stats endpoint, create/detail/delete/session/enrollment endpoints, paginated class-course listing endpoint, add-course-to-class endpoint, invite-learner-to-class endpoint.
   - Pending: update class API, remove course from class API, richer course progress tracking.
 - `platform-admin`: `planned`
 - `service-packages`: `planned-later`
