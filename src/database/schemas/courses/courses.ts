@@ -13,9 +13,9 @@ import {
 import { users } from '../users';
 import { classCourses } from '../classes/class-courses';
 import { courseAssignments } from './course-assignments';
-import { courseChapters } from './course-chapters';
+import { courseSections } from './course-sections';
 import { courseEnrollments } from './course-enrollments';
-import { courseLessons } from './course-lessons';
+import { lessons } from '../lessons/lessons';
 import { courseObjectives } from './course-objectives';
 
 export const courseStatusEnum = pgEnum('course_status', [
@@ -61,9 +61,9 @@ export const coursesRelations = relations(courses, ({ many, one }) => ({
     fields: [courses.authorId],
     references: [users.id],
   }),
-  chapters: many(courseChapters),
+  sections: many(courseSections),
   objectives: many(courseObjectives),
-  lessons: many(courseLessons),
+  lessons: many(lessons),
   assignments: many(courseAssignments),
   enrollments: many(courseEnrollments),
   classCourses: many(classCourses),

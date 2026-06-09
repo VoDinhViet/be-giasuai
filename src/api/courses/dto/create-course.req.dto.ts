@@ -7,26 +7,26 @@ import {
   UUIDFieldOptional,
 } from '../../../decorators/field.decorators';
 import {
-  CourseLessonStatus,
-  CourseLessonType,
+  LessonStatus,
+  LessonType,
   CourseLevel,
   CourseStatus,
 } from '../constants/course.constant';
 
-export class CreateCourseChapterReqDto {
-  @StringFieldOptional({ description: 'Ma chuong', maxLength: 32 })
-  chapterCode?: string;
+export class CreateCourseSectionReqDto {
+  @StringFieldOptional({ description: 'Ma phan', maxLength: 32 })
+  sectionCode?: string;
 
-  @StringField({ description: 'Ten chuong' })
-  chapterTitle!: string;
+  @StringField({ description: 'Ten phan' })
+  sectionTitle!: string;
 
-  @NumberFieldOptional({ description: 'Thu tu chuong', min: 0, int: true })
+  @NumberFieldOptional({ description: 'Thu tu phan', min: 0, int: true })
   order?: number;
 }
 
-export class CreateCourseLessonReqDto {
-  @StringFieldOptional({ description: 'Ma chuong lien ket', maxLength: 32 })
-  chapterCode?: string;
+export class CreateLessonReqDto {
+  @StringFieldOptional({ description: 'Ma phan lien ket', maxLength: 32 })
+  sectionCode?: string;
 
   @StringField({ description: 'Ma bai hoc', maxLength: 32 })
   lessonCode!: string;
@@ -34,8 +34,8 @@ export class CreateCourseLessonReqDto {
   @StringField({ description: 'Ten bai hoc' })
   lessonTitle!: string;
 
-  @EnumFieldOptional(() => CourseLessonType, { description: 'Loai bai hoc' })
-  lessonType?: CourseLessonType;
+  @EnumFieldOptional(() => LessonType, { description: 'Loai bai hoc' })
+  lessonType?: LessonType;
 
   @NumberFieldOptional({
     description: 'Thoi luong theo phut',
@@ -44,10 +44,10 @@ export class CreateCourseLessonReqDto {
   })
   durationMinutes?: number;
 
-  @EnumFieldOptional(() => CourseLessonStatus, {
+  @EnumFieldOptional(() => LessonStatus, {
     description: 'Trang thai bai hoc',
   })
-  status?: CourseLessonStatus;
+  status?: LessonStatus;
 
   @NumberFieldOptional({ description: 'So tai nguyen', min: 0, int: true })
   resourceCount?: number;
@@ -91,15 +91,15 @@ export class CreateCourseReqDto {
   @EnumFieldOptional(() => CourseStatus, { description: 'Trang thai khoa hoc' })
   status?: CourseStatus;
 
-  @ClassFieldOptional(() => CreateCourseChapterReqDto, {
-    description: 'Danh sach chuong tu file import',
+  @ClassFieldOptional(() => CreateCourseSectionReqDto, {
+    description: 'Danh sach phan tu file import',
     each: true,
   })
-  chapters?: CreateCourseChapterReqDto[];
+  sections?: CreateCourseSectionReqDto[];
 
-  @ClassFieldOptional(() => CreateCourseLessonReqDto, {
+  @ClassFieldOptional(() => CreateLessonReqDto, {
     description: 'Danh sach bai hoc tu file import',
     each: true,
   })
-  lessons?: CreateCourseLessonReqDto[];
+  lessons?: CreateLessonReqDto[];
 }

@@ -8,16 +8,17 @@ import {
   uuid,
   varchar,
 } from 'drizzle-orm/pg-core';
-import { courses } from './courses';
-import { courseChapters } from './course-chapters';
+import { courses } from '../courses/courses';
+import { courseSections } from '../courses/course-sections';
+import { lessonParts } from './lesson-parts';
 
-export const courseLessonStatusEnum = pgEnum('course_lesson_status', [
+export const lessonStatusEnum = pgEnum('course_lesson_status', [
   'PUBLISHED',
   'DRAFT',
   'LOCKED',
 ]);
 
-export const courseLessonTypeEnum = pgEnum('course_lesson_type', [
+export const lessonTypeEnum = pgEnum('course_lesson_type', [
   'VIDEO',
   'READING',
   'EXERCISE',
@@ -26,19 +27,19 @@ export const courseLessonTypeEnum = pgEnum('course_lesson_type', [
   'RESOURCE',
 ]);
 
-export const courseLessons = pgTable('course_lessons', {
+export const lessons = pgTable('course_lessons', {
   id: uuid('id').defaultRandom().primaryKey(),
   courseId: uuid('course_id')
     .notNull()
     .references(() => courses.id, { onDelete: 'cascade' }),
-  chapterId: uuid('chapter_id').references(() => courseChapters.id, {
+  sectionId: uuid('section_id').references(() => courseSections.id, {
     onDelete: 'set null',
   }),
   code: varchar('code', { length: 32 }).notNull(),
   title: text('title').notNull(),
   durationMinutes: integer('duration_minutes').default(0).notNull(),
-  type: courseLessonTypeEnum('type').default('VIDEO').notNull(),
-  status: courseLessonStatusEnum('status').default('DRAFT').notNull(),
+  type: lessonTypeEnum('type').default('VIDEO').notNull(),
+  status: lessonStatusEnum('status').default('DRAFT').notNull(),
   resourceCount: integer('resource_count').default(0).notNull(),
   position: integer('position').default(0).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
@@ -48,16 +49,17 @@ export const courseLessons = pgTable('course_lessons', {
     .notNull(),
 });
 
-export const courseLessonsRelations = relations(courseLessons, ({ one }) => ({
+export const lessonsRelations = relations(lessons, ({ many, one }) => ({
   course: one(courses, {
-    fields: [courseLessons.courseId],
+    fields: [lessons.courseId],
     references: [courses.id],
   }),
-  chapter: one(courseChapters, {
-    fields: [courseLessons.chapterId],
-    references: [courseChapters.id],
+  section: one(courseSections, {
+    fields: [lessons.sectionId],
+    references: [courseSections.id],
   }),
+  parts: many(lessonParts),
 }));
 
-export type CourseLesson = typeof courseLessons.$inferSelect;
-export type NewCourseLesson = typeof courseLessons.$inferInsert;
+export type Lesson = typeof lessons.$inferSelect;
+export type NewLesson = typeof lessons.$inferInsert;

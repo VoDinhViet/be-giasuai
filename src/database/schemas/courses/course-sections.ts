@@ -8,9 +8,9 @@ import {
   varchar,
 } from 'drizzle-orm/pg-core';
 import { courses } from './courses';
-import { courseLessons } from './course-lessons';
+import { lessons } from '../lessons/lessons';
 
-export const courseChapters = pgTable('course_chapters', {
+export const courseSections = pgTable('course_sections', {
   id: uuid('id').defaultRandom().primaryKey(),
   courseId: uuid('course_id')
     .notNull()
@@ -25,16 +25,16 @@ export const courseChapters = pgTable('course_chapters', {
     .notNull(),
 });
 
-export const courseChaptersRelations = relations(
-  courseChapters,
+export const courseSectionsRelations = relations(
+  courseSections,
   ({ many, one }) => ({
     course: one(courses, {
-      fields: [courseChapters.courseId],
+      fields: [courseSections.courseId],
       references: [courses.id],
     }),
-    lessons: many(courseLessons),
+    lessons: many(lessons),
   }),
 );
 
-export type CourseChapter = typeof courseChapters.$inferSelect;
-export type NewCourseChapter = typeof courseChapters.$inferInsert;
+export type CourseSection = typeof courseSections.$inferSelect;
+export type NewCourseSection = typeof courseSections.$inferInsert;

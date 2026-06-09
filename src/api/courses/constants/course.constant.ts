@@ -11,7 +11,7 @@ export enum CourseLevel {
   ALL_LEVELS = 'ALL_LEVELS',
 }
 
-export enum CourseLessonType {
+export enum LessonType {
   VIDEO = 'VIDEO',
   READING = 'READING',
   EXERCISE = 'EXERCISE',
@@ -20,7 +20,7 @@ export enum CourseLessonType {
   RESOURCE = 'RESOURCE',
 }
 
-export enum CourseLessonStatus {
+export enum LessonStatus {
   PUBLISHED = 'PUBLISHED',
   DRAFT = 'DRAFT',
   LOCKED = 'LOCKED',

@@ -1,11 +1,15 @@
-import { Expose } from 'class-transformer';
+import { Exclude, Expose } from 'class-transformer';
 import {
+  ClassField,
   NumberField,
   StringField,
   StringFieldOptional,
   UUIDField,
 } from '../../../decorators/field.decorators';
+import { UserResDto } from '../../users/dto/user.res.dto';
+import { LessonResDto } from '../../lessons/dto/lesson.res.dto';
 
+@Exclude()
 export class CourseResDto {
   @UUIDField({ description: 'ID khoa hoc' })
   @Expose()
@@ -23,13 +27,12 @@ export class CourseResDto {
   @Expose()
   category: string;
 
-  @UUIDField({ description: 'ID nguoi bien soan', nullable: true })
+  @ClassField(() => UserResDto, {
+    description: 'Thong tin nguoi bien soan',
+    nullable: true,
+  })
   @Expose()
-  authorId: string | null;
-
-  @StringFieldOptional({ description: 'Ten nguoi bien soan', nullable: true })
-  @Expose()
-  authorName: string | null;
+  author: UserResDto | null;
 
   @StringFieldOptional({ description: 'Mo ta khoa hoc', nullable: true })
   @Expose()
@@ -54,4 +57,12 @@ export class CourseResDto {
   @StringField({ description: 'Trang thai khoa hoc' })
   @Expose()
   status: string;
+
+  @ClassField(() => LessonResDto, {
+    description: 'Danh sach bai hoc',
+    each: true,
+    nullable: true,
+  })
+  @Expose()
+  lessons?: LessonResDto[];
 }

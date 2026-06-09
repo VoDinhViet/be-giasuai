@@ -169,6 +169,27 @@
       "when": 1780713891404,
       "tag": "0023_rename_user_role_values",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1780713891405,
+      "tag": "0024_rename_course_chapters_to_sections",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1780713891406,
+      "tag": "0025_create_course_lesson_parts",
+      "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1780713891407,
+      "tag": "0026_course_lesson_parts_file_metadata",
+      "breakpoints": true
     }
   ]
 }

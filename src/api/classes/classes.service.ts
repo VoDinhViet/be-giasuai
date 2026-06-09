@@ -27,7 +27,7 @@ import { classCourses } from '../../database/schemas/classes/class-courses';
 import { classEnrollments } from '../../database/schemas/classes/class-enrollments';
 import { classSessions } from '../../database/schemas/classes/class-sessions';
 import { classes } from '../../database/schemas/classes/classes';
-import { courseLessons } from '../../database/schemas/courses/course-lessons';
+import { lessons } from '../../database/schemas/lessons/lessons';
 import { courses } from '../../database/schemas/courses/courses';
 import { userProfiles } from '../../database/schemas/user-profiles';
 import { users } from '../../database/schemas/users';
@@ -296,9 +296,7 @@ export class ClassesService {
     const [[classCourseStats], [{ unassignedCount }]] = await Promise.all([
       this.db
         .select({
-          attachedCount: sql<number>`count(${classCourses.id})`.mapWith(
-            Number,
-          ),
+          attachedCount: sql<number>`count(${classCourses.id})`.mapWith(Number),
           requiredCount:
             sql<number>`count(*) filter (where ${classCourses.required})`.mapWith(
               Number,
@@ -364,12 +362,12 @@ export class ClassesService {
           code: courses.code,
           name: courses.name,
           category: courses.category,
-          lessonCount: sql<number>`count(distinct ${courseLessons.id})`.mapWith(
+          lessonCount: sql<number>`count(distinct ${lessons.id})`.mapWith(
             Number,
           ),
         })
         .from(courses)
-        .leftJoin(courseLessons, eq(courseLessons.courseId, courses.id))
+        .leftJoin(lessons, eq(lessons.courseId, courses.id))
         .where(courseFilters)
         .groupBy(courses.id)
         .orderBy(asc(courses.code))

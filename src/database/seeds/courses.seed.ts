@@ -1,14 +1,20 @@
 import * as dotenv from 'dotenv';
 import postgres from 'postgres';
 import { drizzle } from 'drizzle-orm/postgres-js';
-import { eq, inArray } from 'drizzle-orm';
 import * as schema from '../schemas';
 import {
   courseAssignments,
-  courseLessons,
+  courseEnrollments,
+  lessonParts as lessonPartTable,
+  lessons as lessonTable,
   courseObjectives,
   courses,
+  courseSections,
+  userProfiles,
+  users,
 } from '../schemas';
+import { classCourses, classSessions } from '../schemas/classes';
+import { hashPassword } from '../../utils/password.util';
 
 dotenv.config();
 
@@ -18,204 +24,145 @@ if (!databaseUrl) {
   throw new Error('DATABASE_URL is not set');
 }
 
-const fakeCourses = [
-  {
-    code: 'CRS-001',
-    name: 'Toán nền tảng cho THCS',
-    category: 'Toán học',
-    description:
-      'Củng cố kiến thức số học, đại số và hình học cho học viên THCS.',
-    audience: 'Học viên lớp 6-9 cần lấy lại gốc Toán',
-    level: 'BEGINNER' as const,
-    durationMinutes: 960,
-    startDate: '2026-06-10',
-    status: 'PUBLISHED' as const,
-  },
-  {
-    code: 'CRS-002',
-    name: 'Luyện thi Toán vào lớp 10',
-    category: 'Luyện thi',
-    description:
-      'Lộ trình luyện đề, ôn chuyên đề trọng tâm và rèn tốc độ làm bài.',
-    audience: 'Học viên lớp 9 chuẩn bị thi tuyển sinh lớp 10',
-    level: 'INTERMEDIATE' as const,
-    durationMinutes: 1440,
-    startDate: '2026-06-18',
-    status: 'PUBLISHED' as const,
-  },
-  {
-    code: 'CRS-003',
-    name: 'Tiếng Anh giao tiếp cho học sinh',
-    category: 'Tiếng Anh',
-    description:
-      'Tăng phản xạ nghe nói, vốn từ học đường và sự tự tin khi giao tiếp.',
-    audience: 'Học viên THCS, THPT muốn cải thiện giao tiếp',
-    level: 'BEGINNER' as const,
-    durationMinutes: 900,
-    startDate: '2026-06-22',
-    status: 'DRAFT' as const,
-  },
-  {
-    code: 'CRS-004',
-    name: 'Ngữ pháp tiếng Anh trọng tâm',
-    category: 'Tiếng Anh',
-    description:
-      'Hệ thống hóa ngữ pháp thường gặp trong bài kiểm tra và kỳ thi.',
-    audience: 'Học viên cần cải thiện điểm tiếng Anh trên lớp',
-    level: 'INTERMEDIATE' as const,
-    durationMinutes: 720,
-    startDate: '2026-07-01',
-    status: 'PUBLISHED' as const,
-  },
-  {
-    code: 'CRS-005',
-    name: 'Vật lý cơ bản lớp 10',
-    category: 'Vật lý',
-    description:
-      'Làm quen tư duy vật lý, công thức nền và phương pháp giải bài tập.',
-    audience: 'Học viên lớp 10 mới chuyển cấp',
-    level: 'BEGINNER' as const,
-    durationMinutes: 780,
-    startDate: '2026-07-05',
-    status: 'PUBLISHED' as const,
-  },
-  {
-    code: 'CRS-006',
-    name: 'Hóa học mất gốc',
-    category: 'Hóa học',
-    description:
-      'Ôn lại hóa trị, phương trình phản ứng và dạng bài tính toán cơ bản.',
-    audience: 'Học viên THCS, THPT mất gốc Hóa',
-    level: 'BEGINNER' as const,
-    durationMinutes: 840,
-    startDate: '2026-07-08',
-    status: 'DRAFT' as const,
-  },
-  {
-    code: 'CRS-007',
-    name: 'Lập trình Python nhập môn',
-    category: 'Tin học',
-    description:
-      'Học cú pháp Python, tư duy thuật toán và bài tập thực hành nhỏ.',
-    audience: 'Học viên mới bắt đầu lập trình',
-    level: 'BEGINNER' as const,
-    durationMinutes: 1080,
-    startDate: '2026-07-12',
-    status: 'PUBLISHED' as const,
-  },
-  {
-    code: 'CRS-008',
-    name: 'Tư duy giải toán nâng cao',
-    category: 'Toán học',
-    description:
-      'Rèn chiến lược phân tích đề, biến đổi và trình bày lời giải nâng cao.',
-    audience: 'Học viên khá giỏi muốn bứt phá điểm số',
-    level: 'ADVANCED' as const,
-    durationMinutes: 1260,
-    startDate: '2026-07-16',
-    status: 'PUBLISHED' as const,
-  },
-  {
-    code: 'CRS-009',
-    name: 'Kỹ năng tự học hiệu quả',
-    category: 'Kỹ năng học tập',
-    description:
-      'Xây dựng lịch học, ghi chú, ôn tập giãn cách và tự đánh giá tiến độ.',
-    audience: 'Học viên cần cải thiện thói quen học tập',
-    level: 'ALL_LEVELS' as const,
-    durationMinutes: 480,
-    startDate: '2026-07-20',
-    status: 'PUBLISHED' as const,
-  },
-  {
-    code: 'CRS-010',
-    name: 'Ôn tập hè chuyển cấp',
-    category: 'Luyện thi',
-    description: 'Tổng ôn kiến thức quan trọng trước khi bước vào cấp học mới.',
-    audience: 'Học viên chuẩn bị chuyển cấp',
-    level: 'ALL_LEVELS' as const,
-    durationMinutes: 1020,
-    startDate: '2026-08-01',
-    status: 'ARCHIVED' as const,
-  },
-];
+const demoInstructor = {
+  email: 'instructor@giasuai.com',
+  username: 'instructor',
+  fullName: 'Demo Instructor',
+  password: '123456',
+};
+
+const demoCourse = {
+  code: 'AI-TUTOR-FOUNDATION',
+  name: 'Nền tảng học cùng Gia Sư AI',
+  category: 'Kỹ năng học tập',
+  description:
+    'Khóa học hướng dẫn học viên dùng Gia Sư AI để lập kế hoạch học tập, luyện bài và theo dõi tiến độ một cách có hệ thống.',
+  audience: 'Học viên THCS, THPT muốn cải thiện hiệu quả tự học với AI',
+  level: 'ALL_LEVELS' as const,
+  durationMinutes: 420,
+  startDate: '2026-07-01',
+  status: 'PUBLISHED' as const,
+};
 
 async function main() {
   const client = postgres(databaseUrl!);
   const db = drizzle(client, { schema });
 
   try {
-    console.log('Seeding fake courses...');
+    console.log('Seeding demo course...');
 
-    const courseCodes = fakeCourses.map((course) => course.code);
-    const existingCourses = await db
-      .select({ id: courses.id })
-      .from(courses)
-      .where(inArray(courses.code, courseCodes));
-    const existingCourseIds = existingCourses.map((course) => course.id);
+    await db.transaction(async (tx) => {
+      await tx.update(classSessions).set({ courseId: null });
+      await tx.delete(classCourses);
+      await tx.delete(courseAssignments);
+      await tx.delete(courseEnrollments);
+      await tx.delete(lessonPartTable);
+      await tx.delete(lessonTable);
+      await tx.delete(courseObjectives);
+      await tx.delete(courseSections);
+      await tx.delete(courses);
 
-    if (existingCourseIds.length > 0) {
-      await db
-        .delete(courseAssignments)
-        .where(inArray(courseAssignments.courseId, existingCourseIds));
-      await db
-        .delete(courseLessons)
-        .where(inArray(courseLessons.courseId, existingCourseIds));
-      await db
-        .delete(courseObjectives)
-        .where(inArray(courseObjectives.courseId, existingCourseIds));
-    }
-
-    let seededCourseCount = 0;
-
-    for (const fakeCourse of fakeCourses) {
-      const [course] = await db
-        .insert(courses)
-        .values(fakeCourse)
+      const hashedPassword = await hashPassword(demoInstructor.password);
+      const [author] = await tx
+        .insert(users)
+        .values({
+          email: demoInstructor.email,
+          username: demoInstructor.username,
+          fullName: demoInstructor.fullName,
+          password: hashedPassword,
+          role: 'INSTRUCTOR',
+          isLocked: false,
+        })
         .onConflictDoUpdate({
-          target: courses.code,
+          target: users.email,
           set: {
-            name: fakeCourse.name,
-            category: fakeCourse.category,
-            description: fakeCourse.description,
-            audience: fakeCourse.audience,
-            level: fakeCourse.level,
-            durationMinutes: fakeCourse.durationMinutes,
-            startDate: fakeCourse.startDate,
-            status: fakeCourse.status,
+            username: demoInstructor.username,
+            fullName: demoInstructor.fullName,
+            password: hashedPassword,
+            role: 'INSTRUCTOR',
+            isLocked: false,
             updatedAt: new Date(),
           },
         })
         .returning();
 
-      seededCourseCount += 1;
+      await tx
+        .insert(userProfiles)
+        .values({
+          userId: author.id,
+          bio: 'Giảng viên demo cho dữ liệu khóa học mẫu.',
+        })
+        .onConflictDoUpdate({
+          target: userProfiles.userId,
+          set: {
+            bio: 'Giảng viên demo cho dữ liệu khóa học mẫu.',
+            updatedAt: new Date(),
+          },
+        });
 
-      await db.insert(courseObjectives).values([
+      const [course] = await tx
+        .insert(courses)
+        .values({
+          ...demoCourse,
+          authorId: author.id,
+        })
+        .returning();
+
+      await tx.insert(courseObjectives).values([
         {
           courseId: course.id,
-          content: 'Nắm được kiến thức nền và luồng học chính.',
+          content: 'Biết cách đặt mục tiêu học tập rõ ràng với Gia Sư AI.',
           position: 1,
         },
         {
           courseId: course.id,
-          content: 'Hoàn thành bài tập thực hành sau mỗi chuyên đề.',
+          content: 'Xây dựng kế hoạch học theo tuần và theo dõi tiến độ.',
           position: 2,
         },
         {
           courseId: course.id,
-          content: 'Theo dõi tiến độ và cải thiện kết quả qua từng tuần.',
+          content: 'Luyện bài, nhận phản hồi và cải thiện kết quả học tập.',
           position: 3,
         },
       ]);
 
-      const lessonRows = await db
-        .insert(courseLessons)
+      const sections = await tx
+        .insert(courseSections)
         .values([
           {
             courseId: course.id,
-            code: `${course.code}-L01`,
-            title: 'Khởi động và đánh giá đầu vào',
-            durationMinutes: 45,
+            code: 'AI-TUTOR-FOUNDATION-S01',
+            title: 'Làm quen với Gia Sư AI',
+            position: 1,
+          },
+          {
+            courseId: course.id,
+            code: 'AI-TUTOR-FOUNDATION-S02',
+            title: 'Lập kế hoạch học tập',
+            position: 2,
+          },
+          {
+            courseId: course.id,
+            code: 'AI-TUTOR-FOUNDATION-S03',
+            title: 'Luyện tập và đánh giá tiến độ',
+            position: 3,
+          },
+        ])
+        .returning();
+
+      const sectionByCode = new Map(
+        sections.map((section) => [section.code, section.id]),
+      );
+
+      const lessonRows = await tx
+        .insert(lessonTable)
+        .values([
+          {
+            courseId: course.id,
+            sectionId: sectionByCode.get('AI-TUTOR-FOUNDATION-S01'),
+            code: 'AI-TUTOR-FOUNDATION-L01',
+            title: 'Tổng quan khóa học và cách học hiệu quả',
+            durationMinutes: 35,
             type: 'VIDEO',
             status: 'PUBLISHED',
             resourceCount: 2,
@@ -223,9 +170,10 @@ async function main() {
           },
           {
             courseId: course.id,
-            code: `${course.code}-L02`,
-            title: 'Chuyên đề trọng tâm',
-            durationMinutes: 60,
+            sectionId: sectionByCode.get('AI-TUTOR-FOUNDATION-S01'),
+            code: 'AI-TUTOR-FOUNDATION-L02',
+            title: 'Cách đặt câu hỏi để AI phản hồi đúng trọng tâm',
+            durationMinutes: 45,
             type: 'READING',
             status: 'PUBLISHED',
             resourceCount: 3,
@@ -233,52 +181,129 @@ async function main() {
           },
           {
             courseId: course.id,
-            code: `${course.code}-L03`,
-            title: 'Thực hành có hướng dẫn',
+            sectionId: sectionByCode.get('AI-TUTOR-FOUNDATION-S02'),
+            code: 'AI-TUTOR-FOUNDATION-L03',
+            title: 'Thiết lập mục tiêu học theo tuần',
+            durationMinutes: 50,
+            type: 'WORKSHOP',
+            status: 'PUBLISHED',
+            resourceCount: 2,
+            position: 1,
+          },
+          {
+            courseId: course.id,
+            sectionId: sectionByCode.get('AI-TUTOR-FOUNDATION-S02'),
+            code: 'AI-TUTOR-FOUNDATION-L04',
+            title: 'Xây dựng lịch ôn tập cá nhân',
+            durationMinutes: 60,
+            type: 'EXERCISE',
+            status: 'PUBLISHED',
+            resourceCount: 1,
+            position: 2,
+          },
+          {
+            courseId: course.id,
+            sectionId: sectionByCode.get('AI-TUTOR-FOUNDATION-S03'),
+            code: 'AI-TUTOR-FOUNDATION-L05',
+            title: 'Luyện bài và nhận phản hồi từ AI',
             durationMinutes: 75,
             type: 'EXERCISE',
-            status: course.status === 'DRAFT' ? 'DRAFT' : 'PUBLISHED',
-            resourceCount: 1,
-            position: 3,
+            status: 'PUBLISHED',
+            resourceCount: 3,
+            position: 1,
+          },
+          {
+            courseId: course.id,
+            sectionId: sectionByCode.get('AI-TUTOR-FOUNDATION-S03'),
+            code: 'AI-TUTOR-FOUNDATION-L06',
+            title: 'Đánh giá tiến độ và điều chỉnh kế hoạch',
+            durationMinutes: 55,
+            type: 'QUIZ',
+            status: 'PUBLISHED',
+            resourceCount: 2,
+            position: 2,
           },
         ])
         .returning();
 
-      await db.insert(courseAssignments).values([
+      const lessonByCode = new Map(
+        lessonRows.map((lesson) => [lesson.code, lesson.id]),
+      );
+
+      const lessonPartFiles = [
+        ['AI-TUTOR-FOUNDATION-L01', 'Mục tiêu của khóa học', 1],
+        ['AI-TUTOR-FOUNDATION-L01', 'Cách học từng buổi', 2],
+        ['AI-TUTOR-FOUNDATION-L02', 'Câu hỏi tốt cần có gì', 1],
+        ['AI-TUTOR-FOUNDATION-L02', 'Ví dụ hỏi lại khi chưa hiểu', 2],
+        ['AI-TUTOR-FOUNDATION-L03', 'Chọn mục tiêu vừa sức', 1],
+        ['AI-TUTOR-FOUNDATION-L03', 'Mẫu mục tiêu học tập', 2],
+        ['AI-TUTOR-FOUNDATION-L04', 'Chia nhỏ thời gian ôn tập', 1],
+        ['AI-TUTOR-FOUNDATION-L04', 'Thực hành tạo lịch 7 ngày', 2],
+        ['AI-TUTOR-FOUNDATION-L05', 'Gửi bài làm để nhận phản hồi', 1],
+        ['AI-TUTOR-FOUNDATION-L05', 'Tự sửa trước khi xem đáp án', 2],
+        ['AI-TUTOR-FOUNDATION-L06', 'Đọc lại tiến độ tuần', 1],
+        ['AI-TUTOR-FOUNDATION-L06', 'Quiz tự đánh giá', 2],
+      ] as const;
+
+      const lessonPartRows = await tx
+        .insert(lessonPartTable)
+        .values(
+          lessonPartFiles.map(([lessonCode, title, position], index) => {
+            const originalName = `${lessonCode.toLowerCase()}-theory-${position}.pdf`;
+
+            return {
+              lessonId: lessonByCode.get(lessonCode)!,
+              title,
+              type: 'TEXT' as const,
+              fileUrl: `/uploads/demo-course/${originalName}`,
+              originalName,
+              mimeType: 'application/pdf',
+              sizeBytes: 180_000 + index * 12_000,
+              position,
+              isPublished: true,
+            };
+          }),
+        )
+        .returning();
+
+      await tx.insert(courseAssignments).values([
         {
           courseId: course.id,
-          lessonId: lessonRows[1]?.id,
-          code: `${course.code}-ASM01`,
-          title: 'Quiz kiểm tra nhanh',
-          type: 'QUIZ',
-          dueAt: new Date('2026-08-15T17:00:00.000Z'),
-          submissionCount: 24,
-          gradedCount: 18,
-          averageScore: '8.10',
+          lessonId: lessonByCode.get('AI-TUTOR-FOUNDATION-L04'),
+          code: 'AI-TUTOR-FOUNDATION-ASM01',
+          title: 'Nộp kế hoạch học tập 7 ngày',
+          type: 'EXERCISE',
+          dueAt: new Date('2026-07-10T17:00:00.000Z'),
+          submissionCount: 18,
+          gradedCount: 12,
+          averageScore: '8.20',
           status: 'GRADING',
         },
         {
           courseId: course.id,
-          lessonId: lessonRows[2]?.id,
-          code: `${course.code}-ASM02`,
-          title: 'Bài tập thực hành cuối chuyên đề',
-          type: 'EXERCISE',
-          dueAt: new Date('2026-08-22T17:00:00.000Z'),
-          submissionCount: 12,
-          gradedCount: 0,
-          averageScore: '0',
-          status: course.status === 'DRAFT' ? 'DRAFT' : 'OPEN',
+          lessonId: lessonByCode.get('AI-TUTOR-FOUNDATION-L06'),
+          code: 'AI-TUTOR-FOUNDATION-ASM02',
+          title: 'Quiz tổng kết khóa học',
+          type: 'QUIZ',
+          dueAt: new Date('2026-07-20T17:00:00.000Z'),
+          submissionCount: 10,
+          gradedCount: 10,
+          averageScore: '8.75',
+          status: 'GRADED',
         },
       ]);
-    }
 
-    console.log(`Seeded ${seededCourseCount} courses.`);
+      console.log(`Seeded course: ${course.code}`);
+      console.log(`Sections: ${sections.length}`);
+      console.log(`Lessons: ${lessonRows.length}`);
+      console.log(`Lesson parts: ${lessonPartRows.length}`);
+    });
   } catch (error) {
-    console.error('Failed to seed fake courses');
+    console.error('Failed to seed demo course');
     console.error(error);
   } finally {
     await client.end();
   }
 }
 
-main();
+void main();

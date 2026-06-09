@@ -11,11 +11,13 @@ import { ApiTags } from '@nestjs/swagger';
 
 import { OffsetPaginatedDto } from '../../common/offset-pagination/paginated.dto';
 import { Permission } from '../../constants/permission.constant';
-import { ApiAuth } from '../../decorators/http.decorators';
+import { ApiAuth, ApiPublic } from '../../decorators/http.decorators';
+import { UUIDParam } from '../../decorators/param.decorators';
 import { Permissions } from '../../decorators/permissions.decorator';
-import { CourseListItemResDto } from './dto/course-list-item.res.dto';
+import { CourseCurriculumResDto } from './dto/course-curriculum.res.dto';
 import { CourseResDto } from './dto/course.res.dto';
 import { CourseStatsResDto } from './dto/course-stats.res.dto';
+import { CoursesResDto } from './dto/courses.res.dto';
 import { CreateCourseReqDto } from './dto/create-course.req.dto';
 import { GetCoursesDto } from './dto/get-courses.dto';
 import { UpdateCourseReqDto } from './dto/update-course.req.dto';
@@ -30,16 +32,15 @@ export class CoursesController {
   constructor(private readonly coursesService: CoursesService) {}
 
   @Get()
-  @Permissions(Permission.COURSES_READ)
-  @ApiAuth({
-    type: CourseListItemResDto,
+  @ApiPublic({
+    type: CoursesResDto,
     summary: 'Lay danh sach khoa hoc',
     isPaginated: true,
     paginationType: 'offset',
   })
   getCourses(
     @Query() pageOptions: GetCoursesDto,
-  ): Promise<OffsetPaginatedDto<CourseListItemResDto>> {
+  ): Promise<OffsetPaginatedDto<CoursesResDto>> {
     return this.coursesService.getCourses(pageOptions);
   }
 
@@ -53,6 +54,30 @@ export class CoursesController {
     return this.coursesService.getStats();
   }
 
+  @Get(':courseId')
+  @Permissions(Permission.COURSES_READ)
+  @ApiAuth({
+    type: CourseResDto,
+    summary: 'Lay chi tiet khoa hoc theo ID',
+  })
+  getCourseById(
+    @UUIDParam('courseId') courseId: string,
+  ): Promise<CourseResDto> {
+    return this.coursesService.getCourseById(courseId);
+  }
+
+  @Get(':courseId/curriculum')
+  @Permissions(Permission.COURSES_READ)
+  @ApiAuth({
+    type: CourseCurriculumResDto,
+    summary: 'Lay chuong trinh hoc cua khoa hoc',
+  })
+  getCourseCurriculum(
+    @UUIDParam('courseId') courseId: string,
+  ): Promise<CourseCurriculumResDto> {
+    return this.coursesService.getCourseCurriculum(courseId);
+  }
+
   @Post()
   @Permissions(Permission.COURSES_MANAGE)
   @ApiAuth({
@@ -63,7 +88,7 @@ export class CoursesController {
     return this.coursesService.create(reqDto);
   }
 
-  @Get(':courseCode')
+  @Get('code/:courseCode')
   @Permissions(Permission.COURSES_READ)
   @ApiAuth({
     type: CourseResDto,

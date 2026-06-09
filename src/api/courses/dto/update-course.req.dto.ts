@@ -28,7 +28,11 @@ export class UpdateCourseReqDto {
   @EnumFieldOptional(() => CourseLevel, { description: 'Cap do khoa hoc' })
   level?: CourseLevel;
 
-  @NumberFieldOptional({ description: 'Thoi luong theo phut', min: 0, int: true })
+  @NumberFieldOptional({
+    description: 'Thoi luong theo phut',
+    min: 0,
+    int: true,
+  })
   durationMinutes?: number;
 
   @StringFieldOptional({ description: 'Ngay khai giang yyyy-MM-dd' })

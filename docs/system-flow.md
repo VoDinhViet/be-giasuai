@@ -79,10 +79,10 @@
 
 ### Create Course
 
-1. Admin or Instructor calls `POST /courses` with code, name, category, optional course fields, chapters, and lessons already mapped to backend DTO values.
+1. Admin or Instructor calls `POST /courses` with code, name, category, optional course fields, sections, and lessons already mapped to backend DTO values.
 2. Backend validates the request body with `CreateCourseReqDto`.
 3. Backend rejects duplicate course codes with HTTP `409`.
-4. Backend inserts the course, inserts chapters into `course_chapters`, links lessons by `chapterCode`, inserts lessons into `course_lessons`, and returns `CourseResDto`.
+4. Backend inserts the course, inserts sections into `course_sections`, links lessons by `sectionCode`, inserts lessons into `course_lessons`, and returns `CourseResDto`.
 
 ### Course Management
 

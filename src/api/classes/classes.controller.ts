@@ -99,7 +99,7 @@ export class ClassesController {
   ): Promise<OffsetPaginatedDto<UnassignedClassCourseResDto>> {
     return this.classesService.getUnassignedClassCourses(
       classCode,
-      pageOptions,
+      pageOptions, 
     );
   }
 

@@ -5,6 +5,7 @@ import {
   count,
   desc,
   eq,
+  getTableColumns,
   gte,
   ilike,
   lte,
@@ -14,18 +15,19 @@ import {
 } from 'drizzle-orm';
 import { plainToInstance } from 'class-transformer';
 
-import { CourseListItemResDto } from './dto/course-list-item.res.dto';
 import { CourseResDto } from './dto/course.res.dto';
+import { CourseCurriculumResDto } from './dto/course-curriculum.res.dto';
 import { CourseStatsResDto } from './dto/course-stats.res.dto';
+import { CoursesResDto } from './dto/courses.res.dto';
 import {
-  CreateCourseChapterReqDto,
-  CreateCourseLessonReqDto,
+  CreateCourseSectionReqDto,
+  CreateLessonReqDto,
   CreateCourseReqDto,
 } from './dto/create-course.req.dto';
 import { GetCoursesDto } from './dto/get-courses.dto';
 import { UpdateCourseReqDto } from './dto/update-course.req.dto';
 import type {
-  ChapterInsertRow,
+  SectionInsertRow,
   CourseCreateTx,
   CreatedCourse,
   LessonInsertRow,
@@ -37,9 +39,10 @@ import { OffsetPaginatedDto } from '../../common/offset-pagination/paginated.dto
 import { OffsetPaginationDto } from '../../common/offset-pagination/offset-pagination.dto';
 import { DRIZZLE } from '../../database/database.module';
 import type { Database } from '../../database/database.type';
-import { courseChapters } from '../../database/schemas/courses/course-chapters';
+import { courseSections } from '../../database/schemas/courses/course-sections';
 import { courseEnrollments } from '../../database/schemas/courses/course-enrollments';
-import { courseLessons } from '../../database/schemas/courses/course-lessons';
+import { lessons as lessonTable } from '../../database/schemas/lessons/lessons';
+import { courseObjectives } from '../../database/schemas/courses/course-objectives';
 import { courses } from '../../database/schemas/courses/courses';
 import { users } from '../../database/schemas/users';
 
@@ -50,26 +53,16 @@ export class CoursesService {
     private readonly db: Database,
   ) {}
 
-  async getCourseByCode(courseCode: string): Promise<CourseResDto> {
-    const [course] = await this.db
-      .select({
-        id: courses.id,
-        code: courses.code,
-        name: courses.name,
-        category: courses.category,
-        authorId: courses.authorId,
-        authorName: users.fullName,
-        description: courses.description,
-        audience: courses.audience,
-        level: courses.level,
-        durationMinutes: courses.durationMinutes,
-        startDate: courses.startDate,
-        status: courses.status,
-      })
-      .from(courses)
-      .leftJoin(users, eq(users.id, courses.authorId))
-      .where(eq(courses.code, courseCode))
-      .limit(1);
+  async getCourseById(courseId: string): Promise<CourseResDto> {
+    const course = await this.db.query.courses.findFirst({
+      where: eq(courses.id, courseId),
+      with: {
+        author: true,
+        lessons: {
+          orderBy: asc(lessonTable.position),
+        },
+      },
+    });
 
     if (!course) {
       throw new AppException(
@@ -82,9 +75,61 @@ export class CoursesService {
     return plainToInstance(CourseResDto, course);
   }
 
+  async getCourseByCode(courseCode: string): Promise<CourseResDto> {
+    const course = await this.db.query.courses.findFirst({
+      where: eq(courses.code, courseCode),
+      with: {
+        author: true,
+        lessons: {
+          orderBy: asc(lessonTable.position),
+        },
+      },
+    });
+
+    if (!course) {
+      throw new AppException(
+        ErrorCode.E002,
+        HttpStatus.NOT_FOUND,
+        'Course not found',
+      );
+    }
+
+    return plainToInstance(CourseResDto, course);
+  }
+
+  async getCourseCurriculum(courseId: string): Promise<CourseCurriculumResDto> {
+    const course = await this.db.query.courses.findFirst({
+      where: eq(courses.id, courseId),
+      with: {
+        author: true,
+        objectives: {
+          orderBy: asc(courseObjectives.position),
+        },
+        sections: {
+          orderBy: asc(courseSections.position),
+          with: {
+            lessons: {
+              orderBy: asc(lessonTable.position),
+            },
+          },
+        },
+      },
+    });
+
+    if (!course) {
+      throw new AppException(
+        ErrorCode.E002,
+        HttpStatus.NOT_FOUND,
+        'Course not found',
+      );
+    }
+
+    return plainToInstance(CourseCurriculumResDto, course);
+  }
+
   async getCourses(
     pageOptions: GetCoursesDto,
-  ): Promise<OffsetPaginatedDto<CourseListItemResDto>> {
+  ): Promise<OffsetPaginatedDto<CoursesResDto>> {
     const conditions: SQL[] = [];
 
     if (pageOptions.q) {
@@ -111,42 +156,30 @@ export class CoursesService {
         ? asc(courses.createdAt)
         : desc(courses.createdAt);
 
-    const courseRowsQuery = this.db
-      .select({
-        id: courses.id,
-        code: courses.code,
-        name: courses.name,
-        category: courses.category,
-        authorName: users.fullName,
-        learnerCount: sql<number>`count(distinct ${courseEnrollments.id})`,
-        lessonCount: sql<number>`count(distinct ${courseLessons.id})`,
-        durationMinutes: courses.durationMinutes,
-        startDate: courses.startDate,
-        status: courses.status,
-      })
-      .from(courses)
-      .leftJoin(users, eq(users.id, courses.authorId))
-      .leftJoin(courseEnrollments, eq(courseEnrollments.courseId, courses.id))
-      .leftJoin(courseLessons, eq(courseLessons.courseId, courses.id))
-      .where(where)
-      .groupBy(courses.id, users.fullName)
-      .orderBy(orderBy)
-      .limit(pageOptions.limit)
-      .offset(pageOptions.offset);
-
-    const [courseRows, [{ total }]] = await Promise.all([
-      courseRowsQuery,
+    const [entities, [{ total }]] = await Promise.all([
+      this.db
+        .select({
+          ...getTableColumns(courses),
+          author: {
+            ...getTableColumns(users),
+          },
+          learnerCount: sql<number>`count(distinct ${courseEnrollments.id})::int`,
+          lessonCount: sql<number>`count(distinct ${lessonTable.id})::int`,
+        })
+        .from(courses)
+        .leftJoin(users, eq(users.id, courses.authorId))
+        .leftJoin(courseEnrollments, eq(courseEnrollments.courseId, courses.id))
+        .leftJoin(lessonTable, eq(lessonTable.courseId, courses.id))
+        .where(where)
+        .groupBy(courses.id, users.id)
+        .orderBy(orderBy)
+        .limit(pageOptions.limit)
+        .offset(pageOptions.offset),
       this.db.select({ total: count() }).from(courses).where(where),
     ]);
 
-    const data = courseRows.map((course) => ({
-      ...course,
-      learnerCount: Number(course.learnerCount),
-      lessonCount: Number(course.lessonCount),
-    }));
-
     return new OffsetPaginatedDto(
-      plainToInstance(CourseListItemResDto, data),
+      plainToInstance(CoursesResDto, entities),
       new OffsetPaginationDto(total, pageOptions),
     );
   }
@@ -214,17 +247,17 @@ export class CoursesService {
 
     const createdCourse = await this.db.transaction(async (tx) => {
       const course = await this.insertCourse(tx, reqDto);
-      const chapterIdByCode = await this.insertChapters(
+      const sectionIdByCode = await this.insertSections(
         tx,
         course,
-        reqDto.chapters ?? [],
+        reqDto.sections ?? [],
       );
 
       await this.insertLessons(
         tx,
         course.id,
         reqDto.lessons ?? [],
-        chapterIdByCode,
+        sectionIdByCode,
       );
 
       return course;
@@ -316,64 +349,64 @@ export class CoursesService {
     return course;
   }
 
-  private async insertChapters(
+  private async insertSections(
     tx: CourseCreateTx,
     course: CreatedCourse,
-    chapters: CreateCourseChapterReqDto[],
+    sections: CreateCourseSectionReqDto[],
   ): Promise<Map<string, string>> {
-    if (chapters.length === 0) {
+    if (sections.length === 0) {
       return new Map();
     }
 
-    const insertedChapters = await tx
-      .insert(courseChapters)
-      .values(this.buildChapterRows(course, chapters))
+    const insertedSections = await tx
+      .insert(courseSections)
+      .values(this.buildSectionRows(course, sections))
       .returning({
-        id: courseChapters.id,
-        code: courseChapters.code,
+        id: courseSections.id,
+        code: courseSections.code,
       });
 
     return new Map(
-      insertedChapters.map((chapter) => [chapter.code, chapter.id]),
+      insertedSections.map((section) => [section.code, section.id]),
     );
   }
 
   private async insertLessons(
     tx: CourseCreateTx,
     courseId: string,
-    lessons: CreateCourseLessonReqDto[],
-    chapterIdByCode: Map<string, string>,
+    lessons: CreateLessonReqDto[],
+    sectionIdByCode: Map<string, string>,
   ): Promise<void> {
     if (lessons.length === 0) {
       return;
     }
 
     await tx
-      .insert(courseLessons)
-      .values(this.buildLessonRows(courseId, lessons, chapterIdByCode));
+      .insert(lessonTable)
+      .values(this.buildLessonRows(courseId, lessons, sectionIdByCode));
   }
 
-  private buildChapterRows(
+  private buildSectionRows(
     course: { id: string; code: string },
-    chapters: CreateCourseChapterReqDto[],
-  ): ChapterInsertRow[] {
-    return chapters.map((chapter, index) => ({
+    sections: CreateCourseSectionReqDto[],
+  ): SectionInsertRow[] {
+    return sections.map((section, index) => ({
       courseId: course.id,
-      code: chapter.chapterCode ?? `${course.code}-C${index + 1}`,
-      title: chapter.chapterTitle,
-      position: chapter.order ?? index + 1,
+      code: section.sectionCode ?? `${course.code}-C${index + 1}`,
+      title: section.sectionTitle,
+      position: section.order ?? index + 1,
     }));
   }
 
   private buildLessonRows(
     courseId: string,
-    lessons: CreateCourseLessonReqDto[],
-    chapterIdByCode: Map<string, string>,
+    lessons: CreateLessonReqDto[],
+    sectionIdByCode: Map<string, string>,
   ): LessonInsertRow[] {
     return lessons.map((lesson, index) => ({
       courseId,
-      chapterId: lesson.chapterCode
-        ? chapterIdByCode.get(lesson.chapterCode)
+      sectionId: lesson.sectionCode
+        ? sectionIdByCode.get(lesson.sectionCode)
         : undefined,
       code: lesson.lessonCode,
       title: lesson.lessonTitle,

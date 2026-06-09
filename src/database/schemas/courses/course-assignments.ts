@@ -10,7 +10,7 @@ import {
   varchar,
 } from 'drizzle-orm/pg-core';
 import { courses } from './courses';
-import { courseLessons } from './course-lessons';
+import { lessons } from '../lessons/lessons';
 
 export const courseAssignmentStatusEnum = pgEnum('course_assignment_status', [
   'OPEN',
@@ -30,7 +30,7 @@ export const courseAssignments = pgTable('course_assignments', {
   courseId: uuid('course_id')
     .notNull()
     .references(() => courses.id, { onDelete: 'cascade' }),
-  lessonId: uuid('lesson_id').references(() => courseLessons.id, {
+  lessonId: uuid('lesson_id').references(() => lessons.id, {
     onDelete: 'set null',
   }),
   code: varchar('code', { length: 32 }).notNull(),
@@ -57,9 +57,9 @@ export const courseAssignmentsRelations = relations(
       fields: [courseAssignments.courseId],
       references: [courses.id],
     }),
-    lesson: one(courseLessons, {
+    lesson: one(lessons, {
       fields: [courseAssignments.lessonId],
-      references: [courseLessons.id],
+      references: [lessons.id],
     }),
   }),
 );

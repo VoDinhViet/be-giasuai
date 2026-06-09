@@ -18,7 +18,6 @@ import {
   ClassWeekday,
 } from '../constants/class.constant';
 
-
 @Exclude()
 export class ClassResDto {
   @UUIDField({ description: 'ID lop hoc' })

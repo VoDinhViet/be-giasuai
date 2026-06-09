@@ -167,7 +167,7 @@ src/database/schemas/
   courses/
     index.ts
     courses.ts
-    course-chapters.ts
+    course-sections.ts
     course-lessons.ts
     course-objectives.ts
     course-assignments.ts

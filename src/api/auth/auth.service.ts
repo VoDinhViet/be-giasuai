@@ -202,7 +202,9 @@ export class AuthService {
         .insert(users)
         .values({
           ...dto,
-          ...(dto.password ? { password: await hashPassword(dto.password) } : {}),
+          ...(dto.password
+            ? { password: await hashPassword(dto.password) }
+            : {}),
           isLocked: true,
         })
         .returning({

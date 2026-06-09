@@ -171,13 +171,10 @@ export class UsersService {
         })
         .where(eq(users.id, userId));
 
-      await tx
-        .insert(userProfiles)
-        .values(profileValues)
-        .onConflictDoUpdate({
-          target: userProfiles.userId,
-          set: profileValues,
-        });
+      await tx.insert(userProfiles).values(profileValues).onConflictDoUpdate({
+        target: userProfiles.userId,
+        set: profileValues,
+      });
 
       if (reqDto.isLocked) {
         await tx.delete(sessions).where(eq(sessions.userId, userId));
